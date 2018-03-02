@@ -25,6 +25,8 @@ alpha_relative = 0
 volume = 0.5
 fs = 44100
 duration =2
+samples = 0
+temp = False
 
 def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
     print("EEG (uV) per channel: ", ch1, ch2, ch3, ch4)
@@ -36,7 +38,7 @@ def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
 #gamma_relative    30-44Hz
 
 def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
-#        print("Alpha relative: ", ch1, ch2, ch3, ch4 )
+    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0;
     numOfNotNan = 0;
     
@@ -67,8 +69,11 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
         alpha_relative = total / numOfNotNan
         print("Average of alpha relative: ", alpha_relative )
 
-def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
-    print( alpha_relative )
+    global temp
+    temp = True
+
+#def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
+#    print( alpha_relative )
 
 def get_alpha():
     global alpha_relative
@@ -81,22 +86,24 @@ def binaural_beats():
     sampleL = (np.sin(2*np.pi*np.arange(fs*duration)*fL/fs)).astype(np.float32)
     sampleR = (np.sin(2*np.pi*np.arange(fs*duration)*fR/fs)).astype(np.float32)
 
+    global samples
     samples = np.zeros(fs*duration*2).astype(np.float32)
     samples[::2] = sampleL
     samples[1::2] = sampleR
 
+def play(samples, volume):
     stream = p.open(
                     format=pyaudio.paFloat32,
                     channels=2,
                     rate = fs,
                     output = True)
-    print("here")
-#    stream.write(volume*samples)
-#
-#    except KeyboardInterrupt:
-#        stream.stop_stream()
-#        stream.close()
-#        p.terminate()
+
+    stream.write(volume*samples)
+    stream.stop_stream()
+    stream.close()
+    global temp
+    temp = False
+#    p.terminate()
 
 if __name__ == "__main__":
     # This section sets up a connection
@@ -115,7 +122,7 @@ if __name__ == "__main__":
     dispatcher.map("/debug", print)
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
-    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
+#    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
 
 
     server = osc_server.ThreadingOSCUDPServer(
@@ -123,8 +130,12 @@ if __name__ == "__main__":
     print("Serving on {}".format(server.server_address))
     
     while(1):
-        server.handle_request();
+        server.handle_request()
 #        print( "handled request" )
-        binaural_beats();
+        if( temp ):
+            binaural_beats()
+#        print( "after bin beats" )
+            play(samples, volume)
+#        print( "after play" )
 
 
