@@ -16,94 +16,115 @@ import pyaudio
 import numpy as np
 import sys
 
+from tkinter import *
+import os
+import threading
+import gui
+
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
+#---Sound generation globals---
 p = pyaudio.PyAudio()
-
-alpha_relative = 0
 volume = 0.5
 fs = 44100
 duration =2
 samples = 0
-temp = False
 
-def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
-    print("EEG (uV) per channel: ", ch1, ch2, ch3, ch4)
+#---Muse globals---
+alpha_relative = 0
 
-#delta_relative    1-4Hz
-#theta_relative    4-8Hz
-#alpha_relative    7.5-13Hz
-#beta_relative    13-30Hz
-#gamma_relative    30-44Hz
+#---General functionality globals---
+isHandled = False
+isServing = True
 
+#def eeg_handler(unused_addr, args, ch1, ch2, ch3, ch4):
+#    print("EEG (uV) per channel: ", ch1, ch2, ch3, ch4)
+
+#   This function is responsible for actually getting and printing out
+#   the relative alpha values. The following values are the relative values
+#   for the other brain waves:
+#
+#       delta_relative    1-4Hz
+#       theta_relative    4-8Hz
+#       alpha_relative    7.5-13Hz
+#       beta_relative    13-30Hz
+#       gamma_relative    30-44Hz
 def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0;
     numOfNotNan = 0;
     
     if( math.isnan(ch1) == False ):
-#            print( "ch1 is a num ")
         total += ch1
         numOfNotNan += 1
     
     if( math.isnan(ch2) == False ):
-#            print( "ch2 is a num ")
         total += ch2
         numOfNotNan += 1
-
+    
     if( math.isnan(ch3) == False ):
-#            print( "ch3 is a num ")
         total += ch3
         numOfNotNan += 1
-
+    
     if( math.isnan(ch4) == False ):
-#            print( "ch4 is a num ")
         total += ch4
         numOfNotNan += 1
-
+    
     if( numOfNotNan == 0 ):
         print( "waiting for numbers...:" )
     else:
         global alpha_relative
         alpha_relative = total / numOfNotNan
         print("Average of alpha relative: ", alpha_relative )
+    
+    global isHandled
+    isHandled = True
 
-    global temp
-    temp = True
+def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
+    print( alpha_relative )
 
-#def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
-#    print( alpha_relative )
-
-def get_alpha():
-    global alpha_relative
-    return alpha_relative
-
+#   This function generates the binaural beats with a 5 hertz difference based on the current
+#   alpha_relative value
 def binaural_beats():
-    fL = get_alpha() * 1500
-    print("in binaural_beats, ", get_alpha(), " ", fL )
+    global alpha_relative
+    fL = alpha_relative * 1500
+    print("in binaural_beats, ", alpha_relative, " ", fL )
     fR = fL+5
     sampleL = (np.sin(2*np.pi*np.arange(fs*duration)*fL/fs)).astype(np.float32)
     sampleR = (np.sin(2*np.pi*np.arange(fs*duration)*fR/fs)).astype(np.float32)
-
+    
     global samples
     samples = np.zeros(fs*duration*2).astype(np.float32)
     samples[::2] = sampleL
     samples[1::2] = sampleR
 
+#   This function actually opens a stream and plays the binaural beats calculated in binaural_beats
 def play(samples, volume):
     stream = p.open(
                     format=pyaudio.paFloat32,
                     channels=2,
                     rate = fs,
                     output = True)
-
+        
     stream.write(volume*samples)
     stream.stop_stream()
     stream.close()
-    global temp
-    temp = False
+    global isHandled
+    isHandled = False
 #    p.terminate()
+
+#   This function starts the server within the while loop
+def begin_server():
+    global isServing
+    isServing = True
+    print( isServing )
+
+#   This function ends the server within the while loop
+def end_server():
+    global isServing
+    isServing = False
+    print( isServing )
 
 if __name__ == "__main__":
     # This section sets up a connection
@@ -116,26 +137,28 @@ if __name__ == "__main__":
                         default=5000,
                         help="The port to listen on")
     args = parser.parse_args()
-
-
+    
+    
     dispatcher = dispatcher.Dispatcher()
     dispatcher.map("/debug", print)
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
-#    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
-
-
+    #    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
+    
+    
     server = osc_server.ThreadingOSCUDPServer(
-        (args.ip, args.port), dispatcher)
+                                              (args.ip, args.port), dispatcher)
     print("Serving on {}".format(server.server_address))
     
+    # Threading is happening in this file as opposed to gui because there is an error
+    # with the dispatcher if __name__ != "__main__"
+    #    t = threading.Thread(target=gui.main()).start()
+    
+    # isServing allows us to start/stop the stream of data without having to rerun the program
+    # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
     while(1):
-        server.handle_request()
-#        print( "handled request" )
-        if( temp ):
-            binaural_beats()
-#        print( "after bin beats" )
-            play(samples, volume)
-#        print( "after play" )
-
-
+        if( isServing ):
+            server.handle_request()
+            if( isHandled ):
+                binaural_beats()
+                play(samples, volume)
