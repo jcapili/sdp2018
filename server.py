@@ -17,9 +17,11 @@ import numpy as np
 import sys
 
 from tkinter import *
+from tkinter.ttk import *
 import os
 import threading
-import gui
+import multiprocessing
+import time
 
 from pythonosc import dispatcher
 from pythonosc import osc_server
@@ -33,6 +35,7 @@ samples = 0
 
 #---Muse globals---
 alpha_relative = 0
+server = None
 
 #---General functionality globals---
 isHandled = False
@@ -81,8 +84,8 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     global isHandled
     isHandled = True
 
-def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
-    print( alpha_relative )
+#def absolutes(unused_addr, args, ch1, ch2, ch3, ch4):
+#    print( alpha_relative )
 
 #   This function generates the binaural beats with a 5 hertz difference based on the current
 #   alpha_relative value
@@ -118,13 +121,24 @@ def play(samples, volume):
 def begin_server():
     global isServing
     isServing = True
-    print( isServing )
 
 #   This function ends the server within the while loop
 def end_server():
     global isServing
     isServing = False
-    print( isServing )
+
+#   This function recursively calls itself so that we don't need to use .serve_forever()
+def run_server():
+    # isServing allows us to start/stop the stream of data without having to rerun the program
+    # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
+    if( isServing ):
+        server.handle_request()
+        if( isHandled ):
+            binaural_beats()
+            play(samples, volume)
+
+    # 1 is in milliseconds
+    window.after(1, run_server)
 
 if __name__ == "__main__":
     # This section sets up a connection
@@ -147,18 +161,28 @@ if __name__ == "__main__":
     
     
     server = osc_server.ThreadingOSCUDPServer(
-                                              (args.ip, args.port), dispatcher)
+          (args.ip, args.port), dispatcher)
     print("Serving on {}".format(server.server_address))
     
-    # Threading is happening in this file as opposed to gui because there is an error
-    # with the dispatcher if __name__ != "__main__"
-    #    t = threading.Thread(target=gui.main()).start()
     
-    # isServing allows us to start/stop the stream of data without having to rerun the program
-    # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
-    while(1):
-        if( isServing ):
-            server.handle_request()
-            if( isHandled ):
-                binaural_beats()
-                play(samples, volume)
+    #---Setting up the UI---
+    window = Tk() # Create Tk window
+    Label(window, text="Hello World").pack() # Add text to the window via a label
+    
+    top = Frame(window)
+    top.pack()
+    bottom = Frame(window)
+    bottom.pack(side=BOTTOM)
+    
+    # use lambdas so the command functions don't run on button initialization
+    button1 = Button(top, text="Start EEG data", command=lambda : begin_server())
+    button2 = Button(bottom, text="Stop EEG data", command=lambda : end_server())
+    
+    button1.pack()
+    button2.pack()
+    
+    # start the server
+    run_server()
+    
+    # start the GUI
+    window.mainloop()
