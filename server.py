@@ -26,6 +26,12 @@ import time
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
+#pydub sound generation
+
+from pydub import AudioSegment
+from pydub.generators import Sine
+from pydub.playback import play
+
 #---Sound generation globals---
 p = pyaudio.PyAudio()
 volume = 0.5
@@ -89,6 +95,8 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 
 #   This function generates the binaural beats with a 5 hertz difference based on the current
 #   alpha_relative value
+
+"""
 def binaural_beats():
     global alpha_relative
     fL = alpha_relative * 1500
@@ -114,8 +122,30 @@ def play(samples, volume):
     stream.stop_stream()
     stream.close()
     global isHandled
-    isHandled = False
+    isHandled = False"""
 #    p.terminate()
+
+#trying to generate Binaural beat via pydub instead of pyaudio
+def binaural_beat_with_pydub():
+    tone1 = Sine(200).to_audio_segment(duration=3000)
+    tone2 = Sine(210).to_audio_segment(duration=3000)
+
+    left1 = tone1
+    right1 = tone2
+
+    tone3 = Sine(200).to_audio_segment(duration=3000)
+    tone4 = Sine(204).to_audio_segment(duration=3000)
+
+    left2 = tone3
+    right2 = tone4
+
+    alpha = AudioSegment.from_mono_audiosegments(left1, right1)
+    theta = AudioSegment.from_mono_audiosegments(left2, right2)
+
+    #descend = alpha.append(stereo2, crossfade=1000)
+    alpha_to_theta = alpha.append(theta, crossfade=1000)
+    play(alpha_to_theta)
+
 
 #   This function starts the server within the while loop
 def begin_server():
@@ -134,8 +164,9 @@ def run_server():
     if( isServing ):
         server.handle_request()
         if( isHandled ):
-            binaural_beats()
-            play(samples, volume)
+            #binaural_beats()
+            #play(samples, volume)
+            binaural_beat_with_pydub()
 
     # 1 is in milliseconds
     window.after(1, run_server)
