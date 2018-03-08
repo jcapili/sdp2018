@@ -97,18 +97,18 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 #   alpha_relative value
 
 """
-def binaural_beats():
-    global alpha_relative
-    fL = alpha_relative * 1500
-    print("in binaural_beats, ", alpha_relative, " ", fL )
-    fR = fL+5
-    sampleL = (np.sin(2*np.pi*np.arange(fs*duration)*fL/fs)).astype(np.float32)
-    sampleR = (np.sin(2*np.pi*np.arange(fs*duration)*fR/fs)).astype(np.float32)
+#def binaural_beats():
+#    global alpha_relative
+#    fL = alpha_relative * 1500
+#    print("in binaural_beats, ", alpha_relative, " ", fL )
+#    fR = fL+5
+#    sampleL = (np.sin(2*np.pi*np.arange(fs*duration)*fL/fs)).astype(np.float32)
+#    sampleR = (np.sin(2*np.pi*np.arange(fs*duration)*fR/fs)).astype(np.float32)
     
-    global samples
-    samples = np.zeros(fs*duration*2).astype(np.float32)
-    samples[::2] = sampleL
-    samples[1::2] = sampleR
+#    global samples
+#    samples = np.zeros(fs*duration*2).astype(np.float32)
+#    samples[::2] = sampleL
+#    samples[1::2] = sampleR
 
 #   This function actually opens a stream and plays the binaural beats calculated in binaural_beats
 def play(samples, volume):
