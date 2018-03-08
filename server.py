@@ -127,25 +127,31 @@ def play(samples, volume):
 
 #trying to generate Binaural beat via pydub instead of pyaudio
 def binaural_beat_with_pydub():
-    tone1 = Sine(200).to_audio_segment(duration=3000)
-    tone2 = Sine(210).to_audio_segment(duration=3000)
+    if alpha_relative !=0: 
+        print("non 0 alpha_relative")
+        tone1 = Sine(200).to_audio_segment(duration=10000)
+        tone2 = Sine(210).to_audio_segment(duration=10000)
 
-    left1 = tone1
-    right1 = tone2
+        left1 = tone1
+        right1 = tone2
 
-    tone3 = Sine(200).to_audio_segment(duration=3000)
-    tone4 = Sine(204).to_audio_segment(duration=3000)
+        tone3 = Sine(200).to_audio_segment(duration=3000)
+        tone4 = Sine(204).to_audio_segment(duration=3000)
 
-    left2 = tone3
-    right2 = tone4
+        left2 = tone3
+        right2 = tone4
 
-    alpha = AudioSegment.from_mono_audiosegments(left1, right1)
-    theta = AudioSegment.from_mono_audiosegments(left2, right2)
+        alpha = AudioSegment.from_mono_audiosegments(left1, right1)
+        theta = AudioSegment.from_mono_audiosegments(left2, right2)
 
-    #descend = alpha.append(stereo2, crossfade=1000)
-    alpha_to_theta = alpha.append(theta, crossfade=1000)
-    play(alpha_to_theta)
+        #descend = alpha.append(stereo2, crossfade=1000)
+        alpha_to_theta = alpha.append(theta, crossfade=1000)
+        play(alpha_to_theta)
 
+    else: 
+        print("alpha_relative is 0")
+        run_server()
+        isHandled = False
 
 #   This function starts the server within the while loop
 def begin_server():
@@ -162,14 +168,16 @@ def run_server():
     # isServing allows us to start/stop the stream of data without having to rerun the program
     # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
     if( isServing ):
+        print("is serving")
         server.handle_request()
         if( isHandled ):
+            print("is handling")
             #binaural_beats()
             #play(samples, volume)
             binaural_beat_with_pydub()
 
     # 1 is in milliseconds
-    window.after(1, run_server)
+    #window.after(100, run_server) #KILLLING THE WHILE LOOP HOPEFULLY
 
 if __name__ == "__main__":
     # This section sets up a connection
@@ -194,8 +202,10 @@ if __name__ == "__main__":
     server = osc_server.ThreadingOSCUDPServer(
           (args.ip, args.port), dispatcher)
     print("Serving on {}".format(server.server_address))
+
     
-    
+
+  
     #---Setting up the UI---
     window = Tk() # Create Tk window
     Label(window, text="Hello World").pack() # Add text to the window via a label
@@ -211,7 +221,7 @@ if __name__ == "__main__":
     
     button1.pack()
     button2.pack()
-    
+
     # start the server
     run_server()
     
