@@ -175,9 +175,11 @@ def run_server():
             #binaural_beats()
             #play(samples, volume)
             binaural_beat_with_pydub()
+            isHandled = False
+
 
     # 1 is in milliseconds
-    #window.after(100, run_server) #KILLLING THE WHILE LOOP HOPEFULLY
+    window.after(100, run_server) #KILLLING THE WHILE LOOP HOPEFULLY
 
 if __name__ == "__main__":
     # This section sets up a connection
