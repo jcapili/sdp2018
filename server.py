@@ -63,23 +63,9 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     global isHandled
     isHandled = True
 
-#   This function starts the server within the while loop
-def begin_server():
-    global isServing
-    isServing = True
-    print( isServing )
-
-#   This function ends the server within the while loop
-def end_server():
-    global isServing
-    isServing = False
-    print( isServing )
-
 #   This function recursively calls itself so that we don't need to use .serve_forever()
 def run_server():
-    # isServing allows us to start/stop the stream of data without having to rerun the program
     # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
-#    while(1):
     if( isServing ):
         print("is serving")
         server.handle_request()
@@ -91,6 +77,14 @@ def run_server():
 
     # 1 is in milliseconds
     window.after(1, run_server)
+
+def test1():
+    sound_generation.switchTones = True
+    print( sound_generation.switchTones )
+
+def test2():
+    sound_generation.switchTones = False
+    print( sound_generation.switchTones )
 
 if __name__ == "__main__":
     # This section sets up a connection
@@ -127,7 +121,11 @@ if __name__ == "__main__":
     
     Button(top, text="Start Session", command= sound_generation.start_all_sounds).pack()
     Button(bottom, text="Stop Session", command=sound_generation.stop_all_sounds).pack()
-    Button(bottom, text="Restart Session", command=sound_generation.restart_all_sounds).pack()
+    Button(bottom, text="Switch Tones", command=test1).pack()
+    Button(bottom, text="Keep the current tone", command=test2).pack()
+
+    
+    
 
     
     # start the thread
