@@ -7,15 +7,15 @@ from tkinter import *
 from tkinter.ttk import *
 import os
 import threading
-import time
 
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
 import sound_generation
+from gui import start_gui
 
 #---Muse globals---
-alpha_relative = 2
+alpha_relative = 0
 server = None
 old_average = 0
 new_average = 0
@@ -25,15 +25,21 @@ counter = 0
 isHandled = False
 isServing = True
 
-#   This function is responsible for actually getting and printing out
-#   the relative alpha values. The following values are the relative values
-#   for the other brain waves:
-#
-#       delta_relative    1-4Hz
-#       theta_relative    4-8Hz
-#       alpha_relative    7.5-13Hz
-#       beta_relative    13-30Hz
-#       gamma_relative    30-44Hz
+#---Changeable variables---
+average_size = 50
+max_percent_change = 20
+
+"""
+This function is responsible for actually getting and printing out
+the relative alpha values. The following values are the relative values
+for the other brain waves:
+
+       delta_relative    1-4Hz
+       theta_relative    4-8Hz
+       alpha_relative    7.5-13Hz
+       beta_relative    13-30Hz
+       gamma_relative    30-44Hz
+"""
 def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 #    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0;
@@ -65,10 +71,12 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     global isHandled
     isHandled = True
 
-#   This function recursively calls itself so that we don't need to use .serve_forever()
+"""
+This function handles server requests and calls the function calculate_sounds every time a request is successfully handled. It recursively calls itself so that we don't need to use .serve_forever(), which eliminates the use for another thread
+"""
 def run_server():
     global isHandled
-    # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
+    # isHandled makes sure handle_request and calculate_sounds play in that order
     if( isServing ):
         server.handle_request()
 
@@ -79,16 +87,19 @@ def run_server():
     # 1 is in milliseconds
     window.after(1, run_server)
 
+"""
+This function takes the average of a certain number of previous alpha_relative values specified by average_size. Every time the global counter reaches the average_size, the program determines if the current binaural beat needs to be changed, based on max_percent_change.
+"""
 def calculate_sounds():
     global alpha_relative, counter, old_average, new_average
     
-    if counter is 50:
+    if counter is average_size:
         new_average = new_average / counter
         if old_average > 0:
             percent_change = (new_average - old_average) / old_average * 100
             print("percent_change: ", percent_change)
             # integrate machine learning here
-            if percent_change > 20:
+            if percent_change > max_percent_change:
                 sound_generation.switchTones = True
                 #switch tones to get user closest to alpha
         old_average = new_average
@@ -96,14 +107,10 @@ def calculate_sounds():
         counter = 0
     else:
         new_average = new_average + alpha_relative
-        counter = counter + 1
-
-def test():
-    sound_generation.switchTones = True
-    print( sound_generation.switchTones )
+        counter += 1
 
 if __name__ == "__main__":
-    # This section sets up a connection
+    #---Set up connection with Muse---
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip",
                         default="127.0.0.1",
@@ -125,23 +132,9 @@ if __name__ == "__main__":
           (args.ip, args.port), dispatcher)
     print("Serving on {}".format(server.server_address))
 
-  
-    #---Setting up the UI---
-    window = Tk() # Create Tk window
-    Label(window, text="Hello World").pack() # Add text to the window via a label
-    
-    top = Frame(window)
-    top.pack()
-    bottom = Frame(window)
-    bottom.pack(side=BOTTOM)
-    
-    Button(top, text="Start Session", command = sound_generation.start_all_sounds).pack()
-    Button(bottom, text="Stop Session", command=sound_generation.stop_all_sounds).pack()
-    Button(bottom, text="Switch Tones", command=test).pack()
-    
-    # start the thread
+    #---Start the server thread, which should always be running---
     threading.Thread(name="server", target=run_server, daemon=True).start()
 
-    # start the GUI
-    window.mainloop()
+    #---Start the GUI---
+    start_gui()
 
