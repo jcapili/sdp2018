@@ -17,11 +17,13 @@ import sound_generation
 #---Muse globals---
 alpha_relative = 2
 server = None
+old_average = 0
+new_average = 0
+counter = 0
 
 #---General functionality globals---
 isHandled = False
 isServing = True
-timer = 0
 
 #   This function is responsible for actually getting and printing out
 #   the relative alpha values. The following values are the relative values
@@ -33,7 +35,7 @@ timer = 0
 #       beta_relative    13-30Hz
 #       gamma_relative    30-44Hz
 def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
-    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
+#    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0;
     numOfNotNan = 0;
     
@@ -59,31 +61,45 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
         global alpha_relative
         alpha_relative = total / numOfNotNan
         print("Average of alpha relative: ", alpha_relative )
-    
+
     global isHandled
     isHandled = True
 
 #   This function recursively calls itself so that we don't need to use .serve_forever()
 def run_server():
+    global isHandled
     # isHandled makes sure handle_request, binaural_beats, and play() all run IN THAT ORDER
     if( isServing ):
-        print("is serving")
         server.handle_request()
 
         if( isHandled ):
-            print("is handling")
-            global alpha_relative
-            print(alpha_relative)
-
+            calculate_sounds()
+                
+    isHandled = False
     # 1 is in milliseconds
     window.after(1, run_server)
 
-def test1():
-    sound_generation.switchTones = True
-    print( sound_generation.switchTones )
+def calculate_sounds():
+    global alpha_relative, counter, old_average, new_average
+    
+    if counter is 50:
+        new_average = new_average / counter
+        if old_average > 0:
+            percent_change = (new_average - old_average) / old_average * 100
+            print("percent_change: ", percent_change)
+            # integrate machine learning here
+            if percent_change > 20:
+                sound_generation.switchTones = True
+                #switch tones to get user closest to alpha
+        old_average = new_average
+        new_average = 0
+        counter = 0
+    else:
+        new_average = new_average + alpha_relative
+        counter = counter + 1
 
-def test2():
-    sound_generation.switchTones = False
+def test():
+    sound_generation.switchTones = True
     print( sound_generation.switchTones )
 
 if __name__ == "__main__":
@@ -119,14 +135,9 @@ if __name__ == "__main__":
     bottom = Frame(window)
     bottom.pack(side=BOTTOM)
     
-    Button(top, text="Start Session", command= sound_generation.start_all_sounds).pack()
+    Button(top, text="Start Session", command = sound_generation.start_all_sounds).pack()
     Button(bottom, text="Stop Session", command=sound_generation.stop_all_sounds).pack()
-    Button(bottom, text="Switch Tones", command=test1).pack()
-    Button(bottom, text="Keep the current tone", command=test2).pack()
-
-    
-    
-
+    Button(bottom, text="Switch Tones", command=test).pack()
     
     # start the thread
     threading.Thread(name="server", target=run_server, daemon=True).start()

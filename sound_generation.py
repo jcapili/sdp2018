@@ -5,26 +5,27 @@ from pydub.playback import play
 import threading
 import time
 
-tone_length = 5000
+#---Sound generation globals---
+tone_length = 2000
 fade_length = int(tone_length * 0.25)
-
 # Sleep time between sounds in seconds, used with the time library
 sleep_time = tone_length * 0.75 / 1000
+# Used to switch tones if the difference in alpha waves is large enough
+switchTones = False
+freq1 = 200
+freq2 = 400
 
+#---Threading globals---
 # If this is True, the current binaural beat is the first tone
 # If this is False, the current binaural beat is the second tone
 firstIsPlaying = True
-
 # Used to start/stop the threads from calling each other
 isPlaying = False
 
-# Used to switch tones if the difference in alpha waves is large enough
-switchTones = False
-
 def play_tone_1():
     global tone_length, fade_length
-    tone1 = Sine(200).to_audio_segment(duration=tone_length)
-    tone2 = Sine(210).to_audio_segment(duration=tone_length)
+    tone1 = Sine(freq1).to_audio_segment(duration=tone_length)
+    tone2 = Sine(freq1+10).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -34,8 +35,8 @@ def play_tone_1():
     play(alpha)
 
 def play_tone_2():
-    tone1 = Sine(400).to_audio_segment(duration=tone_length)
-    tone2 = Sine(408).to_audio_segment(duration=tone_length)
+    tone1 = Sine(freq2).to_audio_segment(duration=tone_length)
+    tone2 = Sine(freq2+8).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -61,6 +62,7 @@ def timer():
                 print("starting bin beat 2")
                 binaural_thread_2()
                 firstIsPlaying = False
+                switchTones = False
             elif firstIsPlaying is False and switchTones is False:
                 print("starting bin beat 2")
                 binaural_thread_2()
@@ -68,6 +70,7 @@ def timer():
                 print("starting bin beat 1")
                 binaural_thread_1()
                 firstIsPlaying = True
+                switchTones = False
             break
 
 def start_timer():
