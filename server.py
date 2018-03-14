@@ -32,6 +32,10 @@ from pydub import AudioSegment
 from pydub.generators import Sine
 from pydub.playback import play
 
+
+#---Sound effect---
+sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sounds/birds.wav")
+
 #---Sound generation globals---
 p = pyaudio.PyAudio()
 volume = 0.5

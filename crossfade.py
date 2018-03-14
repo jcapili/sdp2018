@@ -3,6 +3,11 @@
 from pydub import AudioSegment
 from pydub.generators import Sine
 from pydub.playback import play
+import wave
+
+#---Sound effect---
+sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sounds/birds.m4a", format="m4a")
+
 
 tone1 = Sine(200).to_audio_segment(duration=3000)
 tone2 = Sine(210).to_audio_segment(duration=3000)
