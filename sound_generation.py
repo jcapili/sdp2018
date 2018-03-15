@@ -1,38 +1,36 @@
 from pydub import AudioSegment
 from pydub.generators import Sine
 from pydub.playback import play
-
+from random import *
 import threading
 import time
 
 #---Sound generation globals---
 tone_length = 2000 # Changeable
-fade_length = int(tone_length * 0.25) # Changeable
-songs = ["A", "Ab", "B", "Bb", "C", "D", "Db", "E", "Eb", "F", "G", "Gb"]
+fade_length = int(tone_length * 0.15) # Changeable
 volume_reduction = 20 # Changeable
-
-"""
-Sleep time between sounds in seconds, used with the time library
-"""
-sleep_time = tone_length * 0.75 / 1000 # Changeable
-
-"""
-Used by server.py to switch tones if the difference in alpha waves is large enough
-"""
+sleep_time = tone_length * 0.65 / 1000 # Changeable
 switchTones = False
-
-freq1 = 200
-freq2 = 400
+freq1 = 217
+freq2 = 274
+song_id = None
+# Still need to fix these numbers except for A and C
+songs = {"A":[217, 274, 329],
+         "Ab":[220, 277, 293],
+         "B":[220, 277, 293],
+         "Bb":[220, 277, 293],
+         "C":[261, 329, 392],
+         "D":[220, 277, 293],
+         "Db":[220, 277, 293],
+         "E":[220, 277, 293],
+         "Eb":[220, 277, 293],
+         "F":[220, 277, 293],
+         "G":[220, 277, 293],
+         "Gb":[220, 277, 293]}
 
 #---Threading globals---
-"""
-If this is True, the current binaural beat is the first tone. If this is False, the current binaural beat is the second tone
-"""
+currentNote = 0
 firstIsPlaying = True
-
-"""
-Used to start/stop the threads from calling each other
-"""
 isPlaying = False
 
 """
@@ -56,7 +54,7 @@ This function plays the specified freq2 tone as a binaural beat, with specified 
 """
 def play_tone_2():
     tone1 = Sine(freq2).to_audio_segment(duration=tone_length)
-    tone2 = Sine(freq2+8).to_audio_segment(duration=tone_length)
+    tone2 = Sine(freq2+10).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -67,6 +65,9 @@ def play_tone_2():
 
     play(theta)
 
+"""
+    This function plays the sound file specified by id
+"""
 def play_sound(id):
     file = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"
     if id == "birds":
@@ -82,7 +83,7 @@ def play_sound(id):
 This function uses a while loop within the thread from the function start_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.
 """
 def timer():
-    global firstIsPlaying, sleep_time, switchTones
+    global firstIsPlaying, sleep_time, switchTones, freq1, freq2
     start = time.time()
     while(1):
         # sleep_time - 1 accounts for sleep before starting timer
@@ -92,6 +93,7 @@ def timer():
                 binaural_thread_1()
             elif firstIsPlaying is True and switchTones is True:
                 print("starting bin beat 2")
+                freq2 = pick_rand_freq()
                 binaural_thread_2()
                 firstIsPlaying = False
                 switchTones = False
@@ -100,10 +102,30 @@ def timer():
                 binaural_thread_2()
             elif firstIsPlaying is False and switchTones is True:
                 print("starting bin beat 1")
+                freq1 = pick_rand_freq()
                 binaural_thread_1()
                 firstIsPlaying = True
                 switchTones = False
             break
+
+"""
+This function picks a random frequency within the current song's chord list based on the current note that's playing.
+"""
+# NEED TO IMPLEMENT MACHINE LEARNING HERE
+def pick_rand_freq():
+    global currentNote
+    if currentNote is 0:
+        currentNote = randint(1,2)
+    elif currentNote is 1:
+        random = randint(0,1)
+        if random is 0:
+            currentNote = 0
+        elif random is 1:
+            currentNote = 2
+    elif currentNote is 2:
+        currentNote = randint(0,1)
+
+    return songs[song_id][currentNote]
 
 """
 This function starts the thread that contains the timer for each binaural beat.
@@ -150,8 +172,11 @@ def stop_session():
 This function starts all sounds if they're not already playing.
 """
 def start_session(id):
-    global isPlaying
+    global isPlaying, freq1, freq2, songs, song_id
     if isPlaying is False:
         isPlaying = True
+        song_id = id
+        freq1 = songs[id][0]
+        freq2 = songs[id][1]
         binaural_thread_1()
         start_sound_thread(id)
