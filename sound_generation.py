@@ -8,6 +8,8 @@ import time
 #---Sound generation globals---
 tone_length = 2000 # Changeable
 fade_length = int(tone_length * 0.25) # Changeable
+songs = ["A", "Ab", "B", "Bb", "C", "D", "Db", "E", "Eb", "F", "G", "Gb"]
+volume_reduction = 20 # Changeable
 
 """
 Sleep time between sounds in seconds, used with the time library
@@ -45,6 +47,8 @@ def play_tone_1():
 
     alpha = AudioSegment.from_mono_audiosegments(left, right).fade_in(duration=fade_length).fade_out(duration=fade_length)
 
+    alpha = alpha - volume_reduction
+
     play(alpha)
 
 """
@@ -58,15 +62,21 @@ def play_tone_2():
     right = tone2
 
     theta = AudioSegment.from_mono_audiosegments(left, right).fade_in(duration=fade_length).fade_out(duration=fade_length)
+    
+    theta = theta - volume_reduction
 
     play(theta)
 
-"""
-This function plays the given sound file, which in this case is birds chirping.
-"""
-def sound_effects():
-    sound1 = AudioSegment.from_file("/Users/jasoncapili/Documents/GitHub/sounds/birds.m4a", format="m4a")
-    play(sound1)
+def play_sound(id):
+    file = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"
+    if id == "birds":
+        file += "birds.m4a"
+        play(AudioSegment.from_file(file, format="m4a"))
+    elif id in songs:
+        print( "playing ", id )
+        file = file + id + ".mp3"
+        play(AudioSegment.from_file(file, format="mp3"))
+
 
 """
 This function uses a while loop within the thread from the function start_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.
@@ -121,24 +131,27 @@ def binaural_thread_2():
     start_timer()
 
 """
-This function starts the thread that contains sound_effects.
+This function starts the sound thread specified by id and contained in the "sounds" folder. Excludes binaural and timer threads.
 """
-def start_sound_effects_thread():
-    threading.Thread(target=sound_effects, daemon=True).start()
+def start_sound_thread( id ):
+    if id == "birds":
+        threading.Thread(target=play_sound, args=[id], daemon=True).start()
+    elif id in songs:
+        threading.Thread(target=play_sound, args=[id], daemon=True).start()
 
 """
 This function stops all sounds from repeating.
 """
-def stop_all_sounds():
+def stop_session():
     global isPlaying
     isPlaying = False
 
 """
 This function starts all sounds if they're not already playing.
 """
-def start_all_sounds():
+def start_session(id):
     global isPlaying
     if isPlaying is False:
         isPlaying = True
         binaural_thread_1()
-        start_sound_effects_thread()
+        start_sound_thread(id)
