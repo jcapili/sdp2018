@@ -22,13 +22,13 @@ def start_gui():
     #---Setting up the radio buttons---
     v = IntVar()
     v.set(0)  # initializing the choice
-    guiSongs = ["A", "Ab", "B", "Bb", "C", "D", "Db", "E", "Eb", "F", "G", "Gb"]
-    chosen_song = "A"
+    guiSongs = ["Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G"]
+    chosen_song = "Ab"
 
     def set_choice():
         global chosen_song
         # Need to redefine guiSongs for some reason, not a mistake
-        guiSongs = ["A", "Ab", "B", "Bb", "C", "D", "Db", "E", "Eb", "F", "G", "Gb"]
+        guiSongs = ["Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G"]
         print(guiSongs)
         chosen_song = guiSongs[v.get()]
         print(chosen_song)

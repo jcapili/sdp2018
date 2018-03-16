@@ -16,7 +16,7 @@ freq2 = 274
 song_id = None
 # do we want to drop these pitches by an octave?
 songs = {
-         "Ab":[195, 261, 311]
+         "Ab":[195, 261, 311],
          "A":[220, 277, 329],
          "Bb":[233, 294, 349],
          "B":[246, 311, 370],
@@ -27,7 +27,7 @@ songs = {
          "E":[329, 415, 494], 
          "F":[349, 440, 523],
          "Gb":[370, 466, 554],
-         "G":[392, 494, 587],
+         "G":[392, 494, 587]
         }
 
 #---Threading globals---
@@ -91,19 +91,19 @@ def timer():
         # sleep_time - 1 accounts for sleep before starting timer
         if (time.time() - start) > (sleep_time - 1):
             if firstIsPlaying is True and switchTones is False:
-                print("starting bin beat 1")
+#                print("starting bin beat 1")
                 binaural_thread_1()
             elif firstIsPlaying is True and switchTones is True:
-                print("starting bin beat 2")
+#                print("starting bin beat 2")
                 freq2 = pick_rand_freq()
                 binaural_thread_2()
                 firstIsPlaying = False
                 switchTones = False
             elif firstIsPlaying is False and switchTones is False:
-                print("starting bin beat 2")
+#                print("starting bin beat 2")
                 binaural_thread_2()
             elif firstIsPlaying is False and switchTones is True:
-                print("starting bin beat 1")
+#                print("starting bin beat 1")
                 freq1 = pick_rand_freq()
                 binaural_thread_1()
                 firstIsPlaying = True
