@@ -4,14 +4,15 @@ import os
 import threading
 
 import sound_generation
+
 chosen_song = None
+window = Tk()
 
 def test():
     sound_generation.switchTones = True
 
 def start_gui():
     global chosen_song
-    window = Tk() # Create Tk window
     Label(window, text="Binaural Beats with Muse").pack()
     
     top = Frame(window)
