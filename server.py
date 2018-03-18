@@ -30,8 +30,12 @@ duration =2
 samples = 0
 
 import sound_generation
+<<<<<<< HEAD
 from gui import start_gui
 #>>>>>>> master
+=======
+from gui import start_gui, window
+>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
@@ -123,9 +127,10 @@ def calculate_sounds():
         new_average = new_average / counter
         if old_average > 0:
             percent_change = (new_average - old_average) / old_average * 100
-            print("percent_change: ", percent_change)
+#            print("percent_change: ", percent_change)
             # integrate machine learning here
-            if percent_change > max_percent_change:
+            if percent_change > max_percent_change and sound_generation.isPlaying is True:
+                print("switching tones")
                 sound_generation.switchTones = True
                 #switch tones to get user closest to alpha
         old_average = new_average
