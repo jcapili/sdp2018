@@ -11,7 +11,7 @@ import threading
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #pydub sound generation
 
 from pydub import AudioSegment
@@ -20,10 +20,10 @@ from pydub.playback import play
 
 
 #---Sound effect---
-sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sounds/birds.wav")
+sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sounds/birds.m4a")
 
 #---Sound generation globals---
-p = pyaudio.PyAudio()
+#p = pyaudio.PyAudio()
 volume = 0.5
 fs = 44100
 duration =2
@@ -31,7 +31,7 @@ samples = 0
 
 import sound_generation
 from gui import start_gui
->>>>>>> master
+#>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
@@ -43,6 +43,10 @@ counter = 0
 #---General functionality globals---
 isHandled = False
 isServing = True
+
+#---Numpy globals---
+# empty list to append values to
+alpha_values = []
 
 #---Changeable variables---
 average_size = 50
@@ -89,6 +93,9 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 
     global isHandled
     isHandled = True
+    global alpha_values
+    alpha_values.append(alpha_relative)
+    print(alpha_values)
 
 """
 This function handles server requests and calls the function calculate_sounds every time a request is successfully handled. It recursively calls itself so that we don't need to use .serve_forever(), which eliminates the use for another thread
