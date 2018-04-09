@@ -17,3 +17,4 @@ pip3 installs:
     -matplotlib
     -pydub
     -numpy
+    -pyaudio

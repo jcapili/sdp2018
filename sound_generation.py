@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 from pydub.generators import Sine
 from pydub.playback import play
+from pydub.utils import make_chunks
 from random import *
 import threading
 import time
@@ -67,7 +68,7 @@ def play_tone_2():
     play(theta)
 
 """
-    This function plays the sound file specified by id
+This function plays the sound file specified by id
 """
 def play_sound(id):
     file = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"
@@ -77,8 +78,31 @@ def play_sound(id):
     elif id in songs:
         print( "playing ", id )
         file = file + id + ".mp3"
-        play(AudioSegment.from_file(file, format="mp3"))
+        custom_play(AudioSegment.from_file(file, format="mp3"))
 
+"""
+This function stops the song file from playing without needing to do a KeyboardInterrupt
+"""
+def custom_play(seg):
+    import pyaudio
+    
+    p = pyaudio.PyAudio()
+    stream = p.open(format=p.get_format_from_width(seg.sample_width),
+                    channels=seg.channels,
+                    rate=seg.frame_rate,
+                    output=True)
+        
+    # break audio into half-second chunks (to allows keyboard interrupts)
+    for chunk in make_chunks(seg, 500):
+        if isPlaying is True:
+            stream.write(chunk._data)
+        else:
+            break
+
+    stream.stop_stream()
+    stream.close()
+
+    p.terminate()
 
 """
 This function uses a while loop within the thread from the function start_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.

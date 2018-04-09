@@ -129,16 +129,23 @@ class SessionData(Frame):
         toolbar.update()
         canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
 
+        def start():
+            stop_btn.pack()
+            switch_btn.pack()
+            back_btn.pack_forget()
+            controller.show_frame(StartPage)
+
         def stop():
             sound_generation.stop_session()
             stop_btn.pack_forget()
             switch_btn.pack_forget()
-            Button(self, text="Back to Home Page", command=lambda:controller.show_frame(StartPage) ).pack()
+            back_btn.pack()
 
         stop_btn = Button(self, text="Stop Session", command= stop)
         stop_btn.pack()
         switch_btn = Button(self, text="Switch Tones", command=test)
         switch_btn.pack()
+        back_btn = Button(self, text="Back to Home Page", command=start )
 
 """
 This method starts the GUI. Used by the server.py file.
