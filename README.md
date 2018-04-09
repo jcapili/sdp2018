@@ -12,3 +12,8 @@ switchTones: Used by server.py to switch tones if the difference in alpha waves 
 firstIsPlaying: If this is True, the current binaural beat is the first tone. If this is false, the current binaural beat is the second one.
 isPlaying: Used to start/stop the threads from calling each other
 freq1: Corresponds to the frequency played by play_tone_1. The frequency is determined by pick_rand_freq() and the specified frequencies in the "songs" dictionary
+
+pip3 installs:
+    -matplotlib
+    -pydub
+    -numpy

@@ -2,6 +2,7 @@ import argparse
 import math
 import numpy as np
 import sys
+import time
 
 from tkinter import *
 from tkinter.ttk import *
@@ -30,12 +31,17 @@ duration =2
 samples = 0
 
 import sound_generation
+<<<<<<< HEAD
 #<<<<<<< HEAD
 from gui import start_gui
 #>>>>>>> master
 #=======
 from gui import start_gui, window
 #>>>>>>> master
+=======
+#import gui
+from gui import start_gui, window, xList, yList, animate
+>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
@@ -112,9 +118,13 @@ def run_server():
 
         if( isHandled ):
             calculate_sounds()
-                
+            if sound_generation.isPlaying is True:
+                update_gui()
+
     isHandled = False
     # 1 is in milliseconds
+#    time.sleep(1)
+#    run_server()
     window.after(1, run_server)
 
 """
@@ -140,6 +150,16 @@ def calculate_sounds():
         new_average = new_average + alpha_relative
         counter += 1
 
+def update_gui():
+    global xList, yList
+
+    xList.append(len(xList))
+    yList.append(alpha_relative)
+
+#    print( xList )
+#    print( yList )
+
+
 if __name__ == "__main__":
     #---Set up connection with Muse---
     parser = argparse.ArgumentParser()
@@ -157,8 +177,8 @@ if __name__ == "__main__":
     dispatcher.map("/debug", print)
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
-    #    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
-    
+#    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
+
     server = osc_server.ThreadingOSCUDPServer(
           (args.ip, args.port), dispatcher)
     print("Serving on {}".format(server.server_address))
