@@ -12,24 +12,35 @@ from matplotlib.figure import Figure
 import matplotlib.animation as animation
 from matplotlib import style
 
+#---General functionality globals---
 chosen_song = None
 xList = []
 yList = []
 
+#---GUI globals---
 window = Tk()
 
 f = Figure(figsize=(5,5), dpi=100)
 a = f.add_subplot(111)
 
+"""
+This function manually switches tones for demonstration purposes.
+"""
 def test():
     sound_generation.switchTones = True
 
+"""
+This function updates the graph display while a user is in session.
+"""
 def animate(i):
     if sound_generation.isPlaying is True:
 #        print(xList,yList)
         a.clear()
         a.plot(xList, yList)
 
+"""
+This class is the container class for the GUI pages. It holds the StartPage and the SessionData pages.
+"""
 class sdpApp():
 
     def __init__(self, top):
@@ -58,7 +69,9 @@ class sdpApp():
         frame = self.frames[cont]
         frame.tkraise()
 
-
+"""
+This class contains all the GUI elements and methods associated with the first page of the GUI.
+"""
 class StartPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self,parent)
@@ -98,6 +111,9 @@ class StartPage(Frame):
         
         Button(self, text="Start Session", command = start).pack()
 
+"""
+This class contains all the GUI elements associated with the session data page of the GUI.
+"""
 class SessionData(Frame):
     
     def __init__(self, parent, controller):
@@ -124,6 +140,9 @@ class SessionData(Frame):
         switch_btn = Button(self, text="Switch Tones", command=test)
         switch_btn.pack()
 
+"""
+This method starts the GUI. Used by the server.py file.
+"""
 def start_gui():
     #---Starting the GUI---
     app = sdpApp(window)
