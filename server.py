@@ -20,7 +20,7 @@ from pydub.playback import play
 
 
 #---Sound effect---
-sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sounds/birds.m4a")
+sound1 = AudioSegment.from_file("/Users/Maile/Desktop/GitHub/sdp2018/sounds/birds.m4a")
 
 #---Sound generation globals---
 #p = pyaudio.PyAudio()
@@ -30,12 +30,12 @@ duration =2
 samples = 0
 
 import sound_generation
-<<<<<<< HEAD
+#<<<<<<< HEAD
 from gui import start_gui
 #>>>>>>> master
-=======
+#=======
 from gui import start_gui, window
->>>>>>> master
+#>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
