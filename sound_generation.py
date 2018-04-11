@@ -12,6 +12,9 @@ fade_length = int(tone_length * 0.15) # Changeable
 volume_reduction = 20 # Changeable
 sleep_time = tone_length * 0.65 / 1000 # Changeable
 switchTones = False
+isAlpha = True
+playMusic = True
+playBinBeats = False
 freq1 = 217
 freq2 = 274
 song_id = None
@@ -40,7 +43,10 @@ This function plays the specified freq1 tone as a binaural beat, with specified 
 """
 def play_tone_1():
     tone1 = Sine(freq1).to_audio_segment(duration=tone_length)
-    tone2 = Sine(freq1+10).to_audio_segment(duration=tone_length)
+    if isAlpha:
+        tone2 = Sine(freq1+10).to_audio_segment(duration=tone_length)
+    else:
+        tone2 = Sine(freq1+5).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -56,7 +62,10 @@ This function plays the specified freq2 tone as a binaural beat, with specified 
 """
 def play_tone_2():
     tone1 = Sine(freq2).to_audio_segment(duration=tone_length)
-    tone2 = Sine(freq2+10).to_audio_segment(duration=tone_length)
+    if isAlpha:
+        tone2 = Sine(freq2+10).to_audio_segment(duration=tone_length)
+    else:
+        tone2 = Sine(freq2+5).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -201,8 +210,16 @@ def start_session(id):
     if isPlaying is False:
         isPlaying = True
         song_id = id
-        freq1 = songs[id][0]
-        freq2 = songs[id][1]
-        start_sound_thread(id)
-        time.sleep(3)
-        binaural_thread_1()
+        
+        if playMusic is True and playBinBeats is True:
+            freq1 = songs[id][0]
+            freq2 = songs[id][1]
+            start_sound_thread(id)
+            time.sleep(3)
+            binaural_thread_1()
+        elif playMusic is True and playBinBeats is False:
+            start_sound_thread(id)
+        elif playMusic is False and playBinBeats is True:
+            freq1 = songs[id][0]
+            freq2 = songs[id][1]
+            binaural_thread_1()

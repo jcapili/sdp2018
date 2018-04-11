@@ -13,7 +13,6 @@ from pythonosc import dispatcher
 from pythonosc import osc_server
 
 import sound_generation
-#import gui
 from gui import start_gui, window, xList, yList, animate
 
 #---Muse globals---
