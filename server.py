@@ -12,7 +12,7 @@ import threading
 from pythonosc import dispatcher
 from pythonosc import osc_server
 
-#<<<<<<< HEAD
+
 #pydub sound generation
 
 from pydub import AudioSegment
@@ -31,17 +31,17 @@ duration =2
 samples = 0
 
 import sound_generation
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #<<<<<<< HEAD
 from gui import start_gui
 #>>>>>>> master
 #=======
 from gui import start_gui, window
 #>>>>>>> master
-=======
+#=======
 #import gui
 from gui import start_gui, window, xList, yList, animate
->>>>>>> master
+#>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
