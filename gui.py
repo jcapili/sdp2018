@@ -37,10 +37,10 @@ def animate(i):
     global xList, yList, yMA
     if sg.isPlaying is True:
         a.clear()
-        if len(xList) is not len(yMA):
-#            print(xList)
+        if len(xList) != len(yMA):
+            print(len(xList))
 #            print(yList)
-#            print(yMA)
+            print(len(yMA))
             print( "Size of xList is not the same size as yMA" )
         else:
             a.plot(xList, yMA)

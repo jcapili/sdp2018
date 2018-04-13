@@ -145,13 +145,14 @@ def update_gui():
 
     xList.append(len(xList))
     yList.append(alpha_relative)
-    
+
     yMA = moving_average(yList,3).tolist()
 
     setYMA(yMA)
 
     for i in range(len(xList)-len(yMA)):
         xList.pop()
+
 #    print(yMA)
 #    print( xList )
 #    print( yList )
