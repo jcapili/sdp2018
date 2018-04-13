@@ -33,7 +33,7 @@ isServing = True
 
 #---Changeable variables---
 average_size = 50
-max_percent_change = 20
+max_percent_change = 15
 
 def get_weights(unused_addr, args, ch1, ch2, ch3, ch4 ):
     print("weights per channel: ", ch1, ch2, ch3, ch4 )
