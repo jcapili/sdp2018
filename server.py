@@ -32,7 +32,7 @@ duration =2
 samples = 0
 
 import sound_generation
-<<<<<<< HEAD
+#<<<<<<< HEAD
 #<<<<<<< HEAD
 #<<<<<<< HEAD
 from gui import start_gui
@@ -44,9 +44,9 @@ from gui import start_gui, window
 #import gui
 from gui import start_gui, window, xList, yList, animate
 #>>>>>>> master
-=======
+#=======
 from gui import start_gui, window
->>>>>>> master
+#>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
