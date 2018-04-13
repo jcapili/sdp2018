@@ -16,6 +16,7 @@ from matplotlib import style
 chosen_song = None
 xList = []
 yList = []
+yMA = [] # Moving Average of y
 
 #---GUI globals---
 window = Tk()
@@ -33,10 +34,24 @@ def test():
 This function updates the graph display while a user is in session.
 """
 def animate(i):
+    global xList, yList, yMA
     if sg.isPlaying is True:
-#        print(xList,yList)
         a.clear()
-        a.plot(xList, yList)
+        if len(xList) is not len(yMA):
+#            print(xList)
+#            print(yList)
+#            print(yMA)
+            print( "Size of xList is not the same size as yMA" )
+        else:
+            a.plot(xList, yMA)
+#        a.plot(xList[len(xList)-len(yMA):], yMA)
+
+"""
+Sets the value of yMA. Used by server.py because importing yMA doesn't work for some reason
+"""
+def setYMA(setter):
+    global yMA
+    yMA = list(setter)
 
 """
 This class is the container class for the GUI pages. It holds the SongChoice and the SessionData pages.
