@@ -69,7 +69,7 @@ alpha_values = []
 
 #---Changeable variables---
 average_size = 50
-max_percent_change = 20
+max_percent_change = 15
 
 def get_weights(unused_addr, args, ch1, ch2, ch3, ch4 ):
     print("weights per channel: ", ch1, ch2, ch3, ch4 )
@@ -184,13 +184,14 @@ def update_gui():
 
     xList.append(len(xList))
     yList.append(alpha_relative)
-    
+
     yMA = moving_average(yList,3).tolist()
 
     setYMA(yMA)
 
     for i in range(len(xList)-len(yMA)):
         xList.pop()
+
 #    print(yMA)
 #    print( xList )
 #    print( yList )

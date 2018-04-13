@@ -37,10 +37,10 @@ def animate(i):
     global xList, yList, yMA
     if sg.isPlaying is True:
         a.clear()
-        if len(xList) is not len(yMA):
-#            print(xList)
+        if len(xList) != len(yMA):
+            print(len(xList))
 #            print(yList)
-#            print(yMA)
+            print(len(yMA))
             print( "Size of xList is not the same size as yMA" )
         else:
             a.plot(xList, yMA)
@@ -96,7 +96,7 @@ class StartPage(Frame):
         #---Setting up the radio buttons---
         v = IntVar()
         v.set(0)  # initializing the choice
-        choices = ["No music", "Just music", "Just alpha binaural beats", "Just delta binaural beats", "Music with alpha binaural beats", "Music with delta binaural beats"]
+        choices = ["No music", "Just music", "Just alpha binaural beats", "Just theta binaural beats", "Music with alpha binaural beats", "Music with theta binaural beats"]
         choice = "No music"
         
         #---Setting up the buttons---
@@ -109,7 +109,7 @@ class StartPage(Frame):
                 sg.playMusic = False
                 sg.playBinBeats = True
                 sg.isAlpha = True
-            elif v.get() is 3: # Just delta binaural beats
+            elif v.get() is 3: # Just theta binaural beats
                 sg.playMusic = False
                 sg.playBinBeats = True
                 sg.isAlpha = False
@@ -117,7 +117,7 @@ class StartPage(Frame):
                 sg.playMusic = True
                 sg.playBinBeats = True
                 sg.isAlpha = True
-            elif v.get() is 5: # Music with delta binaural beats
+            elif v.get() is 5: # Music with theta binaural beats
                 sg.playMusic = True
                 sg.playBinBeats = True
                 sg.isAlpha = False
