@@ -1,6 +1,7 @@
 import argparse
 import math
 import numpy as np
+from numpy import convolve
 import sys
 import time
 
@@ -31,6 +32,7 @@ duration =2
 samples = 0
 
 import sound_generation
+<<<<<<< HEAD
 #<<<<<<< HEAD
 #<<<<<<< HEAD
 from gui import start_gui
@@ -42,6 +44,9 @@ from gui import start_gui, window
 #import gui
 from gui import start_gui, window, xList, yList, animate
 #>>>>>>> master
+=======
+from gui import start_gui, window
+>>>>>>> master
 
 #---Muse globals---
 alpha_relative = 0
@@ -49,6 +54,10 @@ server = None
 old_average = 0
 new_average = 0
 counter = 0
+w1 = 1
+w2 = 1
+w3 = 1
+w4 = 1
 
 #---General functionality globals---
 isHandled = False
@@ -61,6 +70,15 @@ alpha_values = []
 #---Changeable variables---
 average_size = 50
 max_percent_change = 20
+
+def get_weights(unused_addr, args, ch1, ch2, ch3, ch4 ):
+    print("weights per channel: ", ch1, ch2, ch3, ch4 )
+    global w1, w2, w3, w4
+    # These are inverted because 1 means good and 3+ means bad
+    w1 = 1/ch1
+    w2 = 1/ch2
+    w3 = 1/ch3
+    w4 = 1/ch4
 
 """
 This function is responsible for actually getting and printing out
@@ -75,8 +93,9 @@ for the other brain waves:
 """
 def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 #    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
-    total = 0;
-    numOfNotNan = 0;
+    total = 0
+    numOfNotNan = 0
+    tot_weight = w1 + w2 + w3 + w4
     
     if( math.isnan(ch1) == False ):
         total += ch1
@@ -149,13 +168,30 @@ def calculate_sounds():
     else:
         new_average = new_average + alpha_relative
         counter += 1
+"""
+Calculates the moving average of yList to make a smoother graph. Taken from https://gordoncluster.wordpress.com/2014/02/13/python-numpy-how-to-generate-moving-averages-efficiently-part-2/
+"""
+def moving_average( values, window ):
+    weights = np.repeat(1.0, window)/window
+    sma = np.convolve(values, weights, 'valid')
+    return sma
 
+"""
+Updates the gui according to a moving average.
+"""
 def update_gui():
-    global xList, yList
+    from gui import xList, yList, yMA, setYMA
 
     xList.append(len(xList))
     yList.append(alpha_relative)
+    
+    yMA = moving_average(yList,3).tolist()
 
+    setYMA(yMA)
+
+    for i in range(len(xList)-len(yMA)):
+        xList.pop()
+#    print(yMA)
 #    print( xList )
 #    print( yList )
 
@@ -176,8 +212,9 @@ if __name__ == "__main__":
     dispatcher = dispatcher.Dispatcher()
     dispatcher.map("/debug", print)
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
+    dispatcher.map("/muse/elements/horseshoe", get_weights, "horseshoe" )
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
-#    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
+    #    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
 
     server = osc_server.ThreadingOSCUDPServer(
           (args.ip, args.port), dispatcher)

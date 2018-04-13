@@ -3,7 +3,7 @@ from tkinter.ttk import *
 import os
 import threading
 
-import sound_generation
+import sound_generation as sg
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -16,6 +16,7 @@ from matplotlib import style
 chosen_song = None
 xList = []
 yList = []
+yMA = [] # Moving Average of y
 
 #---GUI globals---
 window = Tk()
@@ -27,19 +28,33 @@ a = f.add_subplot(111)
 This function manually switches tones for demonstration purposes.
 """
 def test():
-    sound_generation.switchTones = True
+    sg.switchTones = True
 
 """
 This function updates the graph display while a user is in session.
 """
 def animate(i):
-    if sound_generation.isPlaying is True:
-#        print(xList,yList)
+    global xList, yList, yMA
+    if sg.isPlaying is True:
         a.clear()
-        a.plot(xList, yList)
+        if len(xList) is not len(yMA):
+#            print(xList)
+#            print(yList)
+#            print(yMA)
+            print( "Size of xList is not the same size as yMA" )
+        else:
+            a.plot(xList, yMA)
+#        a.plot(xList[len(xList)-len(yMA):], yMA)
 
 """
-This class is the container class for the GUI pages. It holds the StartPage and the SessionData pages.
+Sets the value of yMA. Used by server.py because importing yMA doesn't work for some reason
+"""
+def setYMA(setter):
+    global yMA
+    yMA = list(setter)
+
+"""
+This class is the container class for the GUI pages. It holds the SongChoice and the SessionData pages.
 """
 class sdpApp():
 
@@ -54,7 +69,7 @@ class sdpApp():
         
         self.frames = {}
         
-        for F in (StartPage, SessionData):
+        for F in (StartPage, SongChoice, SessionData):
             
             frame = F(container, self)
             
@@ -71,8 +86,82 @@ class sdpApp():
 
 """
 This class contains all the GUI elements and methods associated with the first page of the GUI.
-"""
+    """
 class StartPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self,parent)
+        global chosen_song
+        Label(self, text="Binaural Beats with Muse").pack()
+        
+        #---Setting up the radio buttons---
+        v = IntVar()
+        v.set(0)  # initializing the choice
+        choices = ["No music", "Just music", "Just alpha binaural beats", "Just delta binaural beats", "Music with alpha binaural beats", "Music with delta binaural beats"]
+        choice = "No music"
+        
+        #---Setting up the buttons---
+        
+        def next():
+            if v.get() is 1: # Just music
+                sg.playMusic = True
+                sg.playBinBeats = False
+            elif v.get() is 2: # Just alpha binaural beats
+                sg.playMusic = False
+                sg.playBinBeats = True
+                sg.isAlpha = True
+            elif v.get() is 3: # Just delta binaural beats
+                sg.playMusic = False
+                sg.playBinBeats = True
+                sg.isAlpha = False
+            elif v.get() is 4: # Music with alpha binaural beats
+                sg.playMusic = True
+                sg.playBinBeats = True
+                sg.isAlpha = True
+            elif v.get() is 5: # Music with delta binaural beats
+                sg.playMusic = True
+                sg.playBinBeats = True
+                sg.isAlpha = False
+            
+            controller.show_frame(SongChoice)
+        
+        def start():
+            sg.playMusic = False
+            sg.playBinBeats = False
+            sg.start_session("nothing")
+            controller.show_frame(SessionData)
+        
+        next_btn = Button(self, text="Next", command = next)
+        session_btn = Button( self, text="Start Session", command = start)
+        
+        def set_choice():
+            if v.get() is 0:
+                if next_btn.winfo_ismapped() is 1:
+                    next_btn.pack_forget()
+                if session_btn.winfo_ismapped() is 0:
+                    session_btn.pack()
+            else:
+                if next_btn.winfo_ismapped() is 0:
+                    next_btn.pack()
+                if session_btn.winfo_ismapped() is 1:
+                    session_btn.pack_forget()
+        
+        Label(self,
+              text="""Choose the type of session:""",
+              justify = LEFT).pack()
+            
+        for val, choices in enumerate(choices):
+              Radiobutton(self,
+                          text=choices,
+                          variable=v,
+                          command=set_choice,
+                          value = val).pack(anchor=CENTER)
+
+        session_btn.pack()
+
+"""
+This class contains all the GUI elements and methods associated with the song choice page of the GUI.
+"""
+class SongChoice(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self,parent)
         global chosen_song
@@ -93,7 +182,7 @@ class StartPage(Frame):
             print(chosen_song)
         
         Label(self,
-              text="""Choose the key of the song you'd like to listen to:""",
+              text="""Choose the key you'd like to listen to:""",
               justify = LEFT).pack()
             
         for val, guiSongs in enumerate(guiSongs):
@@ -106,7 +195,7 @@ class StartPage(Frame):
         #---Setting up the buttons---
         
         def start():
-            sound_generation.start_session(chosen_song)
+            sg.start_session(chosen_song)
             controller.show_frame(SessionData)
         
         Button(self, text="Start Session", command = start).pack()
@@ -136,7 +225,7 @@ class SessionData(Frame):
             controller.show_frame(StartPage)
 
         def stop():
-            sound_generation.stop_session()
+            sg.stop_session()
             stop_btn.pack_forget()
             switch_btn.pack_forget()
             back_btn.pack()
@@ -146,6 +235,12 @@ class SessionData(Frame):
         switch_btn = Button(self, text="Switch Tones", command=test)
         switch_btn.pack()
         back_btn = Button(self, text="Back to Home Page", command=start )
+
+    def switch_btn_packed(temp):
+        if temp:
+            switch_btn.pack()
+        else:
+            switch_btn.pack_forget
 
 """
 This method starts the GUI. Used by the server.py file.
