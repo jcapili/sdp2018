@@ -17,6 +17,7 @@ chosen_song = None
 xList = []
 yList = []
 yMA = [] # Moving Average of y
+graphAlpha = True
 
 #---GUI globals---
 window = Tk()
@@ -102,22 +103,27 @@ class StartPage(Frame):
         #---Setting up the buttons---
         
         def next():
+            global graphAlpha
             if v.get() is 1: # Just music
                 sg.playMusic = True
                 sg.playBinBeats = False
             elif v.get() is 2: # Just alpha binaural beats
+                graphAlpha = True
                 sg.playMusic = False
                 sg.playBinBeats = True
                 sg.isAlpha = True
             elif v.get() is 3: # Just theta binaural beats
+                graphAlpha = False
                 sg.playMusic = False
                 sg.playBinBeats = True
                 sg.isAlpha = False
             elif v.get() is 4: # Music with alpha binaural beats
+                graphAlpha = True
                 sg.playMusic = True
                 sg.playBinBeats = True
                 sg.isAlpha = True
             elif v.get() is 5: # Music with theta binaural beats
+                graphAlpha = False
                 sg.playMusic = True
                 sg.playBinBeats = True
                 sg.isAlpha = False
@@ -125,6 +131,9 @@ class StartPage(Frame):
             controller.show_frame(SongChoice)
         
         def start():
+            global xList, yList
+            xList = []
+            yList = []
             sg.playMusic = False
             sg.playBinBeats = False
             sg.start_session("nothing")
@@ -197,8 +206,12 @@ class SongChoice(Frame):
         def start():
             sg.start_session(chosen_song)
             controller.show_frame(SessionData)
+                
+        def back():
+            controller.show_frame(StartPage)
         
         Button(self, text="Start Session", command = start).pack()
+        Button(self, text="Back", command = back).pack()
 
 """
 This class contains all the GUI elements associated with the session data page of the GUI.
@@ -207,20 +220,20 @@ class SessionData(Frame):
     
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-        label = Label(self, text="Average alpha relative value")
+        label = Label(self, text="Average alpha/theta relative value")
         label.pack(pady=10,padx=10)
         
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
-        canvas.get_tk_widget().pack(side=BOTTOM, fill=BOTH, expand=True)
+        canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
 
         toolbar = NavigationToolbar2TkAgg(canvas, self)
         toolbar.update()
         canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
 
         def start():
-            stop_btn.pack()
-            switch_btn.pack()
+            stop_btn.pack(side=BOTTOM)
+            switch_btn.pack(side=BOTTOM)
             back_btn.pack_forget()
             controller.show_frame(StartPage)
 
@@ -228,19 +241,29 @@ class SessionData(Frame):
             sg.stop_session()
             stop_btn.pack_forget()
             switch_btn.pack_forget()
-            back_btn.pack()
+            back_btn.pack(side=BOTTOM)
+        
+        def hide():
+            canvas.get_tk_widget().pack_forget()
+            canvas._tkcanvas.pack_forget()
+            show_btn.pack(side=BOTTOM)
+            hide_btn.pack_forget()
+        
+        def show():
+            canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=True)
+            canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
+            hide_btn.pack(side=BOTTOM)
+            show_btn.pack_forget()
 
         stop_btn = Button(self, text="Stop Session", command= stop)
-        stop_btn.pack()
         switch_btn = Button(self, text="Switch Tones", command=test)
-        switch_btn.pack()
         back_btn = Button(self, text="Back to Home Page", command=start )
+        hide_btn = Button(self, text="Hide Graph", command=hide)
+        show_btn = Button(self, text="Show Graph", command=show)
+        hide_btn.pack(side=BOTTOM)
+        stop_btn.pack(side=BOTTOM)
+        switch_btn.pack(side=BOTTOM)
 
-    def switch_btn_packed(temp):
-        if temp:
-            switch_btn.pack()
-        else:
-            switch_btn.pack_forget
 
 """
 This method starts the GUI. Used by the server.py file.
