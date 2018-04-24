@@ -181,10 +181,10 @@ def moving_average( values, window ):
 Updates the gui according to a moving average.
 """
 def update_gui():
-    from gui import xList, yList, yMA, setYMA
+    from gui import xList, yList, yMA, setYMA, graphAlpha
 
     xList.append(len(xList))
-    if( sound_generation.graphAlpha):
+    if graphAlpha is True:
         yList.append(alpha_relative)
     else:
         yList.append(theta_relative)

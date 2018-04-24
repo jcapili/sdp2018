@@ -204,6 +204,9 @@ class SongChoice(Frame):
         #---Setting up the buttons---
         
         def start():
+            global xList, yList
+            xList = []
+            yList = []
             sg.start_session(chosen_song)
             controller.show_frame(SessionData)
                 
