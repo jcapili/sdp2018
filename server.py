@@ -50,6 +50,7 @@ from gui import start_gui, window
 
 #---Muse globals---
 alpha_relative = 0
+theta_relative = 0
 server = None
 old_average = 0
 new_average = 0
@@ -127,6 +128,47 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     print(alpha_values)
 
 """
+    This function is responsible for actually getting and printing out
+    the relative theta values. The following values are the relative values
+    for the other brain waves:
+    
+    delta_relative    1-4Hz
+    theta_relative    4-8Hz
+    alpha_relative    7.5-13Hz
+    beta_relative    13-30Hz
+    gamma_relative    30-44Hz
+    """
+def get_theta_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
+    total = 0
+    numOfNotNan = 0
+    
+    if( math.isnan(ch1) == False ):
+        total += ch1
+        numOfNotNan += 1
+    
+    if( math.isnan(ch2) == False ):
+        total += ch2
+        numOfNotNan += 1
+    
+    if( math.isnan(ch3) == False ):
+        total += ch3
+        numOfNotNan += 1
+    
+    if( math.isnan(ch4) == False ):
+        total += ch4
+        numOfNotNan += 1
+    
+    if( numOfNotNan == 0 ):
+        print( "waiting for numbers...:" )
+    else:
+        global theta_relative
+        theta_relative = total / numOfNotNan
+        print("Average of theta relative: ", theta_relative )
+    
+    global isHandled
+    isHandled = True
+
+"""
 This function handles server requests and calls the function calculate_sounds every time a request is successfully handled. It recursively calls itself so that we don't need to use .serve_forever(), which eliminates the use for another thread
 """
 def run_server():
@@ -183,7 +225,10 @@ def update_gui():
     from gui import xList, yList, yMA, setYMA
 
     xList.append(len(xList))
-    yList.append(alpha_relative)
+    if( sound_generation.graphAlpha):
+        yList.append(alpha_relative)
+    else:
+        yList.append(theta_relative)
 
     yMA = moving_average(yList,3).tolist()
 
@@ -215,6 +260,8 @@ if __name__ == "__main__":
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
     dispatcher.map("/muse/elements/horseshoe", get_weights, "horseshoe" )
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
+    dispatcher.map("/muse/elements/theta_relative", get_theta_relative, "theta_relative" )
+
     #    dispatcher.map("/muse/elements/alpha_absolute", absolutes, "alpha_absolute" )
 
     server = osc_server.ThreadingOSCUDPServer(
