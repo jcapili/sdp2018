@@ -38,9 +38,9 @@ def animate(i):
     if sg.isPlaying is True:
         a.clear()
         if len(xList) != len(yMA):
-            print(len(xList))
+#            print(len(xList))
 #            print(yList)
-            print(len(yMA))
+#            print(len(yMA))
             print( "Size of xList is not the same size as yMA" )
         else:
             a.plot(xList, yMA)
