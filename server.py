@@ -23,10 +23,10 @@ server = None
 old_average = 0
 new_average = 0
 counter = 0
-w1 = 1
-w2 = 1
-w3 = 1
-w4 = 1
+q1 = 1
+q2 = 1
+q3 = 1
+q4 = 1
 
 #---General functionality globals---
 isHandled = False
@@ -37,13 +37,12 @@ average_size = 50
 max_percent_change = 15
 
 def get_weights(unused_addr, args, ch1, ch2, ch3, ch4 ):
-    print("weights per channel: ", ch1, ch2, ch3, ch4 )
-    global w1, w2, w3, w4
-    # These are inverted because 1 means good and 3+ means bad
-    w1 = 1/ch1
-    w2 = 1/ch2
-    w3 = 1/ch3
-    w4 = 1/ch4
+    print("Signal quality per channel: ", ch1, ch2, ch3, ch4 )
+    global q1, q2, q3, q4
+    q1 = ch1
+    q2 = ch2
+    q3 = ch3
+    q4 = ch4
 
 """
 This function is responsible for actually getting and printing out
@@ -60,21 +59,20 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 #    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0
     numOfNotNan = 0
-    tot_weight = w1 + w2 + w3 + w4
     
-    if( math.isnan(ch1) == False ):
+    if math.isnan(ch1) == False and q1 == 1:
         total += ch1
         numOfNotNan += 1
     
-    if( math.isnan(ch2) == False ):
+    if math.isnan(ch2) == False and q2 == 1:
         total += ch2
         numOfNotNan += 1
     
-    if( math.isnan(ch3) == False ):
+    if math.isnan(ch3) == False and q3 == 1:
         total += ch3
         numOfNotNan += 1
     
-    if( math.isnan(ch4) == False ):
+    if math.isnan(ch4) == False and q4 == 1:
         total += ch4
         numOfNotNan += 1
     
