@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 import os
 import threading
+import csv
 
 import sound_generation as sg
 
@@ -245,6 +246,7 @@ class SessionData(Frame):
             stop_btn.pack_forget()
             switch_btn.pack_forget()
             back_btn.pack(side=BOTTOM)
+            csv_btn.pack(side=BOTTOM)
         
         def hide():
             canvas.get_tk_widget().pack_forget()
@@ -257,12 +259,19 @@ class SessionData(Frame):
             canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=True)
             hide_btn.pack(side=BOTTOM)
             show_btn.pack_forget()
+        
+        def generate():
+            with open('session.csv', 'wb' ) as csvfile:
+                writer = csv.writer(csvfile, delimiter=' ', quotechar = '|', quoting=csv.QUOTE_MINIMAL)
+                for i in range(len(xList)):
+                    writer.writerow([xList[i], yList[i]])
 
         stop_btn = Button(self, text="Stop Session", command= stop)
         switch_btn = Button(self, text="Switch Tones", command=test)
         back_btn = Button(self, text="Back to Home Page", command=start )
         hide_btn = Button(self, text="Hide Graph", command=hide)
         show_btn = Button(self, text="Show Graph", command=show)
+        csv_btn = Button(self, text="Generate CSV File", command=generate)
         hide_btn.pack(side=BOTTOM)
         stop_btn.pack(side=BOTTOM)
         switch_btn.pack(side=BOTTOM)
