@@ -73,7 +73,7 @@ def play_tone_2():
 This function plays the sound file specified by id
 """
 def play_sound(id):
-    file = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"
+    file = "sounds/"
     if id == "birds":
         file += "birds.m4a"
         play(AudioSegment.from_file(file, format="m4a"))
