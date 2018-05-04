@@ -52,17 +52,19 @@ from gui import start_gui, window
 alpha_relative = 0
 theta_relative = 0
 server = None
-old_average = 0
-new_average = 0
-counter = 0
-w1 = 1
-w2 = 1
-w3 = 1
-w4 = 1
+alpha_avg = 0
+theta_avg = 0
+a_counter = 0
+t_counter = 0
+q1 = 1
+q2 = 1
+q3 = 1
+q4 = 1
 
 #---General functionality globals---
 isHandled = False
 isServing = True
+graphAlpha = True
 
 #---Numpy globals---
 # empty list to append values to
@@ -73,13 +75,12 @@ average_size = 50
 max_percent_change = 15
 
 def get_weights(unused_addr, args, ch1, ch2, ch3, ch4 ):
-    print("weights per channel: ", ch1, ch2, ch3, ch4 )
-    global w1, w2, w3, w4
-    # These are inverted because 1 means good and 3+ means bad
-    w1 = 1/ch1
-    w2 = 1/ch2
-    w3 = 1/ch3
-    w4 = 1/ch4
+    print("Signal quality per channel: ", ch1, ch2, ch3, ch4 )
+    global q1, q2, q3, q4
+    q1 = ch1
+    q2 = ch2
+    q3 = ch3
+    q4 = ch4
 
 """
 This function is responsible for actually getting and printing out
@@ -96,21 +97,20 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
 #    print("Alpha relative: ", ch1, ch2, ch3, ch4 )
     total = 0
     numOfNotNan = 0
-    tot_weight = w1 + w2 + w3 + w4
     
-    if( math.isnan(ch1) == False ):
+    if math.isnan(ch1) == False and q1 == 1:
         total += ch1
         numOfNotNan += 1
     
-    if( math.isnan(ch2) == False ):
+    if math.isnan(ch2) == False and q2 == 1:
         total += ch2
         numOfNotNan += 1
     
-    if( math.isnan(ch3) == False ):
+    if math.isnan(ch3) == False and q3 == 1:
         total += ch3
         numOfNotNan += 1
     
-    if( math.isnan(ch4) == False ):
+    if math.isnan(ch4) == False and q4 == 1:
         total += ch4
         numOfNotNan += 1
     
@@ -119,7 +119,7 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     else:
         global alpha_relative
         alpha_relative = total / numOfNotNan
-        print("Average of alpha relative: ", alpha_relative )
+#        print("Average of alpha relative: ", alpha_relative )
 
     global isHandled
     isHandled = True
@@ -163,8 +163,8 @@ def get_theta_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     else:
         global theta_relative
         theta_relative = total / numOfNotNan
-        print("Average of theta relative: ", theta_relative )
-    
+#        print("Average of theta relative: ", theta_relative )
+
     global isHandled
     isHandled = True
 
@@ -192,24 +192,23 @@ def run_server():
 This function takes the average of a certain number of previous alpha_relative values specified by average_size. Every time the global counter reaches the average_size, the program determines if the current binaural beat needs to be changed, based on max_percent_change.
 """
 def calculate_sounds():
-    global alpha_relative, counter, old_average, new_average
+    global alpha_relative, theta_relative, a_counter, t_counter, alpha_avg, theta_avg
+    from sound_generation import phaseIsPlaying, playAlpha
     
-    if counter is average_size:
-        new_average = new_average / counter
-        if old_average > 0:
-            percent_change = (new_average - old_average) / old_average * 100
-#            print("percent_change: ", percent_change)
-            # integrate machine learning here
-            if percent_change > max_percent_change and sound_generation.isPlaying is True:
-                print("switching tones")
-                sound_generation.switchTones = True
-                #switch tones to get user closest to alpha
-        old_average = new_average
-        new_average = 0
-        counter = 0
-    else:
-        new_average = new_average + alpha_relative
-        counter += 1
+    if phaseIsPlaying[0] is True:
+        alpha_avg += alpha_relative
+        a_counter += 1
+    elif phaseIsPlaying[1] is True:
+        theta_avg += theta_relative
+        t_counter += 1
+    elif phaseIsPlaying[2] is True:
+        alpha_avg = alpha_avg / a_counter
+        theta_avg = theta_avg / t_counter
+        if alpha_avg > theta_avg:
+            playAlpha = True
+        else:
+            playAlpha = False
+
 """
 Calculates the moving average of yList to make a smoother graph. Taken from https://gordoncluster.wordpress.com/2014/02/13/python-numpy-how-to-generate-moving-averages-efficiently-part-2/
 """
@@ -223,9 +222,10 @@ Updates the gui according to a moving average.
 """
 def update_gui():
     from gui import xList, yList, yMA, setYMA
+    global graphAlpha
 
     xList.append(len(xList))
-    if( sound_generation.graphAlpha):
+    if graphAlpha is True:
         yList.append(alpha_relative)
     else:
         yList.append(theta_relative)
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     dispatcher = dispatcher.Dispatcher()
     dispatcher.map("/debug", print)
     #    dispatcher.map("/muse/eeg", eeg_handler, "EEG")
-    dispatcher.map("/muse/elements/horseshoe", get_weights, "horseshoe" )
+#    dispatcher.map("/muse/elements/horseshoe", get_weights, "horseshoe" )
     dispatcher.map("/muse/elements/alpha_relative", get_alpha_relative, "alpha_relative" )
     dispatcher.map("/muse/elements/theta_relative", get_theta_relative, "theta_relative" )
 

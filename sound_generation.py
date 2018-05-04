@@ -12,9 +12,7 @@ fade_length = int(tone_length * 0.15) # Changeable
 volume_reduction = 20 # Changeable
 sleep_time = tone_length * 0.65 / 1000 # Changeable
 switchTones = False
-isAlpha = True
-playMusic = True
-playBinBeats = False
+playAlpha = True
 freq1 = 217
 freq2 = 274
 song_id = None
@@ -35,18 +33,16 @@ songs = {
 
 #---Threading globals---
 currentNote = 0
-firstIsPlaying = True
 isPlaying = False
+phases = []
+phaseIsPlaying = [False,False,False]
 
 """
 This function plays the specified freq1 tone as a binaural beat, with specified tone_length and fade_length
 """
 def play_tone_1():
     tone1 = Sine(freq1).to_audio_segment(duration=tone_length)
-    if isAlpha:
-        tone2 = Sine(freq1+10).to_audio_segment(duration=tone_length)
-    else:
-        tone2 = Sine(freq1+5).to_audio_segment(duration=tone_length)
+    tone2 = Sine(freq1+10).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -61,11 +57,8 @@ def play_tone_1():
 This function plays the specified freq2 tone as a binaural beat, with specified tone_length and fade_length.
 """
 def play_tone_2():
-    tone1 = Sine(freq2).to_audio_segment(duration=tone_length)
-    if isAlpha:
-        tone2 = Sine(freq2+10).to_audio_segment(duration=tone_length)
-    else:
-        tone2 = Sine(freq2+5).to_audio_segment(duration=tone_length)
+    tone1 = Sine(freq1).to_audio_segment(duration=tone_length)
+    tone2 = Sine(freq1+5).to_audio_segment(duration=tone_length)
     
     left = tone1
     right = tone2
@@ -87,7 +80,9 @@ def play_sound(id):
     elif id in songs:
         print( "playing ", id )
         file = file + id + ".mp3"
-        custom_play(AudioSegment.from_file(file, format="mp3"))
+        custom_play(AudioSegment.from_file(file, format="mp3").fade_in(duration=fade_length).fade_out(duration=fade_length))
+        print("playing next song")
+        custom_play(AudioSegment.from_file(file, format="mp3").fade_in(duration=fade_length).fade_out(duration=fade_length))
 
 """
 This function stops the song file from playing without needing to do a KeyboardInterrupt
@@ -117,49 +112,45 @@ def custom_play(seg):
 This function uses a while loop within the thread from the function start_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.
 """
 def timer():
-    global firstIsPlaying, sleep_time, switchTones, freq1, freq2
+    from server import graphAlpha
+    global phases, phaseIsPlaying, playAlpha
+    start = time.time()
+    while isPlaying is True:
+        elapsed = time.time() - start
+#        print(elapsed)
+        if elapsed > phases[0] and elapsed < phases[1] and phaseIsPlaying[0] is False:
+            phaseIsPlaying[0] = True
+            binaural_thread_1()
+        elif elapsed > phases[1] and elapsed < phases[2] and phaseIsPlaying[1] is False:
+            graphAlpha = False
+            phaseIsPlaying[0] = False
+            phaseIsPlaying[1] = True
+            binaural_thread_2()
+        elif elapsed > phases[2] and elapsed < phases[3] and phaseIsPlaying[2] is False:
+            phaseIsPlaying[1] = False
+            phaseIsPlaying[2] = True
+            if playAlpha:
+                binaural_thread_1()
+            else:
+                binaural_thread_2()
+        elif elapsed > phases[3]:
+            phaseIsPlaying[2] = False
+            stop_session()
+
+def bin_timer():
     start = time.time()
     while(1):
-        # sleep_time - 1 accounts for sleep before starting timer
-        if (time.time() - start) > (sleep_time - 1):
-            if firstIsPlaying is True and switchTones is False:
-#                print("starting bin beat 1")
+        if (time.time() - start ) > (sleep_time-1):
+            if phaseIsPlaying[0] is True:
                 binaural_thread_1()
-            elif firstIsPlaying is True and switchTones is True:
-#                print("starting bin beat 2")
-                freq2 = pick_rand_freq()
+            elif phaseIsPlaying[1] is True:
                 binaural_thread_2()
-                firstIsPlaying = False
-                switchTones = False
-            elif firstIsPlaying is False and switchTones is False:
-#                print("starting bin beat 2")
-                binaural_thread_2()
-            elif firstIsPlaying is False and switchTones is True:
-#                print("starting bin beat 1")
-                freq1 = pick_rand_freq()
-                binaural_thread_1()
-                firstIsPlaying = True
-                switchTones = False
+            elif phaseIsPlaying[2] is True:
+                if playAlpha:
+                    binaural_thread_1()
+                else:
+                    binaural_thread_2()
             break
-
-"""
-This function picks a random frequency within the current song's chord list based on the current note that's playing.
-"""
-# NEED TO IMPLEMENT MACHINE LEARNING HERE
-def pick_rand_freq():
-    global currentNote
-    if currentNote is 0:
-        currentNote = randint(1,2)
-    elif currentNote is 1:
-        random = randint(0,1)
-        if random is 0:
-            currentNote = 0
-        elif random is 1:
-            currentNote = 2
-    elif currentNote is 2:
-        currentNote = randint(0,1)
-
-    return songs[song_id][currentNote]
 
 """
 This function starts the thread that contains the timer for each binaural beat.
@@ -168,6 +159,9 @@ def start_timer():
     if( isPlaying ):
         threading.Thread(target=timer, daemon=True).start()
 
+def start_bin_timer():
+    if( isPlaying ):
+        threading.Thread(target=bin_timer, daemon=True).start()
 """
 This function starts the thread that contains play_tone_1.
 """
@@ -175,7 +169,7 @@ def binaural_thread_1():
     threading.Thread(target=play_tone_1, daemon=True).start()
     # Sleep to avoid seg fault
     time.sleep(1)
-    start_timer()
+    start_bin_timer()
 
 """
 This function starts the thread that contains play_tone_2.
@@ -184,7 +178,7 @@ def binaural_thread_2():
     threading.Thread(target=play_tone_2, daemon=True).start()
     # Sleep to avoid seg fault
     time.sleep(1)
-    start_timer()
+    start_bin_timer()
 
 """
 This function starts the sound thread specified by id and contained in the "sounds" folder. Excludes binaural and timer threads.
@@ -194,6 +188,8 @@ def start_sound_thread( id ):
         threading.Thread(target=play_sound, args=[id], daemon=True).start()
     elif id in songs:
         threading.Thread(target=play_sound, args=[id], daemon=True).start()
+    time.sleep(1)
+    start_timer()
 
 """
 This function stops all sounds from repeating.
@@ -206,20 +202,36 @@ def stop_session():
 This function starts all sounds if they're not already playing.
 """
 def start_session(id):
-    global isPlaying, freq1, freq2, songs, song_id
+    global isPlaying, freq1, freq2, songs, song_id, phases
     if isPlaying is False:
         isPlaying = True
         song_id = id
-        
-        if playMusic is True and playBinBeats is True:
-            freq1 = songs[id][0]
-            freq2 = songs[id][1]
-            start_sound_thread(id)
-            time.sleep(3)
-            binaural_thread_1()
-        elif playMusic is True and playBinBeats is False:
-            start_sound_thread(id)
-        elif playMusic is False and playBinBeats is True:
-            freq1 = songs[id][0]
-            freq2 = songs[id][1]
-            binaural_thread_1()
+
+        name = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"+ id + ".mp3"
+        length = len(AudioSegment.from_file(name, format="mp3")) # milliseconds
+        phaseLength = 2*length/4
+        phases.append( phaseLength )
+        phases.append( 2*phaseLength )
+        phases.append( 3*phaseLength )
+        phases.append( 4*phaseLength )
+#        phases.append( 10 )
+#        phases.append( 20 )
+#        phases.append( 30 )
+#        phases.append( 40 )
+
+        freq1 = songs[id][0]
+        start_sound_thread(id)
+
+#        if playMusic is True and playBinBeats is True:
+#            freq1 = songs[id][0]
+#            freq2 = songs[id][1]
+#            start_sound_thread(id)
+#            time.sleep(3)
+#            binaural_thread_1()
+#        elif playMusic is True and playBinBeats is False:
+#            start_sound_thread(id)
+#        elif playMusic is False and playBinBeats is True:
+#            freq1 = songs[id][0]
+#            freq2 = songs[id][1]
+#            binaural_thread_1()
+
