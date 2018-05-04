@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
 import os
 import threading
 import csv
@@ -71,7 +72,7 @@ class sdpApp():
         
         self.frames = {}
         
-        for F in (StartPage, SongChoice, SessionData):
+        for F in ( SongChoice, SessionData):
             
             frame = F(container, self)
             
@@ -79,94 +80,94 @@ class sdpApp():
             
             frame.grid(row=0, column=0, sticky="nsew")
         
-        self.show_frame(StartPage)
+        self.show_frame(SongChoice)
     
     def show_frame(self, cont):
         
         frame = self.frames[cont]
         frame.tkraise()
 
-"""
-This class contains all the GUI elements and methods associated with the first page of the GUI.
-    """
-class StartPage(Frame):
-    def __init__(self, parent, controller):
-        Frame.__init__(self,parent)
-        global chosen_song
-        Label(self, text="Binaural Beats with Muse").pack()
-        
-        #---Setting up the radio buttons---
-        v = IntVar()
-        v.set(0)  # initializing the choice
-        choices = ["No music", "Just music", "Just alpha binaural beats", "Just theta binaural beats", "Music with alpha binaural beats", "Music with theta binaural beats"]
-        choice = "No music"
-        
-        #---Setting up the buttons---
-        
-        def next():
-            global graphAlpha
-            if v.get() is 1: # Just music
-                sg.playMusic = True
-                sg.playBinBeats = False
-            elif v.get() is 2: # Just alpha binaural beats
-                graphAlpha = True
-                sg.playMusic = False
-                sg.playBinBeats = True
-                sg.isAlpha = True
-            elif v.get() is 3: # Just theta binaural beats
-                graphAlpha = False
-                sg.playMusic = False
-                sg.playBinBeats = True
-                sg.isAlpha = False
-            elif v.get() is 4: # Music with alpha binaural beats
-                graphAlpha = True
-                sg.playMusic = True
-                sg.playBinBeats = True
-                sg.isAlpha = True
-            elif v.get() is 5: # Music with theta binaural beats
-                graphAlpha = False
-                sg.playMusic = True
-                sg.playBinBeats = True
-                sg.isAlpha = False
-            
-            controller.show_frame(SongChoice)
-        
-        def start():
-            global xList, yList
-            xList = []
-            yList = []
-            sg.playMusic = False
-            sg.playBinBeats = False
-            sg.start_session("nothing")
-            controller.show_frame(SessionData)
-        
-        next_btn = Button(self, text="Next", command = next)
-        session_btn = Button( self, text="Start Session", command = start)
-        
-        def set_choice():
-            if v.get() is 0:
-                if next_btn.winfo_ismapped() is 1:
-                    next_btn.pack_forget()
-                if session_btn.winfo_ismapped() is 0:
-                    session_btn.pack()
-            else:
-                if next_btn.winfo_ismapped() is 0:
-                    next_btn.pack()
-                if session_btn.winfo_ismapped() is 1:
-                    session_btn.pack_forget()
-        
-        Label(self,
-              text="""Choose the type of session:""",
-              justify = LEFT).pack()
-            
-        for val, choices in enumerate(choices):
-              Radiobutton(self,
-                          text=choices,
-                          variable=v,
-                          command=set_choice,
-                          value = val).pack(anchor=CENTER)
-
-        session_btn.pack()
+#"""
+#This class contains all the GUI elements and methods associated with the first page of the GUI.
+#    """
+#class StartPage(Frame):
+#    def __init__(self, parent, controller):
+#        Frame.__init__(self,parent)
+#        global chosen_song
+#        Label(self, text="Binaural Beats with Muse").pack()
+#
+#        #---Setting up the radio buttons---
+#        v = IntVar()
+#        v.set(0)  # initializing the choice
+#        choices = ["No music", "Just music", "Just alpha binaural beats", "Just theta binaural beats", "Music with alpha binaural beats", "Music with theta binaural beats"]
+#        choice = "No music"
+#
+#        #---Setting up the buttons---
+#
+#        def next():
+#            global graphAlpha
+#            if v.get() is 1: # Just music
+#                sg.playMusic = True
+#                sg.playBinBeats = False
+#            elif v.get() is 2: # Just alpha binaural beats
+#                graphAlpha = True
+#                sg.playMusic = False
+#                sg.playBinBeats = True
+#                sg.isAlpha = True
+#            elif v.get() is 3: # Just theta binaural beats
+#                graphAlpha = False
+#                sg.playMusic = False
+#                sg.playBinBeats = True
+#                sg.isAlpha = False
+#            elif v.get() is 4: # Music with alpha binaural beats
+#                graphAlpha = True
+#                sg.playMusic = True
+#                sg.playBinBeats = True
+#                sg.isAlpha = True
+#            elif v.get() is 5: # Music with theta binaural beats
+#                graphAlpha = False
+#                sg.playMusic = True
+#                sg.playBinBeats = True
+#                sg.isAlpha = False
+#
+#            controller.show_frame(SongChoice)
+#
+#        def start():
+#            global xList, yList
+#            xList = []
+#            yList = []
+#            sg.playMusic = False
+#            sg.playBinBeats = False
+#            sg.start_session("nothing")
+#            controller.show_frame(SessionData)
+#
+#        next_btn = Button(self, text="Next", command = next)
+#        session_btn = Button( self, text="Start Session", command = start)
+#
+#        def set_choice():
+#            if v.get() is 0:
+#                if next_btn.winfo_ismapped() is 1:
+#                    next_btn.pack_forget()
+#                if session_btn.winfo_ismapped() is 0:
+#                    session_btn.pack()
+#            else:
+#                if next_btn.winfo_ismapped() is 0:
+#                    next_btn.pack()
+#                if session_btn.winfo_ismapped() is 1:
+#                    session_btn.pack_forget()
+#
+#        Label(self,
+#              text="""Choose the type of session:""",
+#              justify = LEFT).pack()
+#
+#        for val, choices in enumerate(choices):
+#              Radiobutton(self,
+#                          text=choices,
+#                          variable=v,
+#                          command=set_choice,
+#                          value = val).pack(anchor=CENTER)
+#
+#        session_btn.pack()
 
 """
 This class contains all the GUI elements and methods associated with the song choice page of the GUI.
@@ -215,7 +216,7 @@ class SongChoice(Frame):
             controller.show_frame(StartPage)
         
         Button(self, text="Start Session", command = start).pack()
-        Button(self, text="Back", command = back).pack()
+#        Button(self, text="Back", command = back).pack()
 
 """
 This class contains all the GUI elements associated with the session data page of the GUI.
@@ -239,7 +240,7 @@ class SessionData(Frame):
             stop_btn.pack(side=BOTTOM)
             switch_btn.pack(side=BOTTOM)
             back_btn.pack_forget()
-            controller.show_frame(StartPage)
+            controller.show_frame(SongChoice)
 
         def stop():
             sg.stop_session()
@@ -261,10 +262,10 @@ class SessionData(Frame):
             show_btn.pack_forget()
         
         def generate():
-            with open('session.csv', 'wb' ) as csvfile:
-                writer = csv.writer(csvfile, delimiter=' ', quotechar = '|', quoting=csv.QUOTE_MINIMAL)
-                for i in range(len(xList)):
-                    writer.writerow([xList[i], yList[i]])
+            with open('session.csv', 'w' ) as csvfile:
+                writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+                writer.writerow(yList)
+            messagebox.showinfo("Alert","CSV file generated successfully")
 
         stop_btn = Button(self, text="Stop Session", command= stop)
         switch_btn = Button(self, text="Switch Tones", command=test)
