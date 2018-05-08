@@ -64,7 +64,6 @@ q4 = 1
 #---General functionality globals---
 isHandled = False
 isServing = True
-graphAlpha = True
 
 #---Numpy globals---
 # empty list to append values to
@@ -119,7 +118,7 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     else:
         global alpha_relative
         alpha_relative = total / numOfNotNan
-#        print("Average of alpha relative: ", alpha_relative )
+        print("Average of alpha relative: ", alpha_relative )
 
     global isHandled
     isHandled = True
@@ -222,13 +221,9 @@ Updates the gui according to a moving average.
 """
 def update_gui():
     from gui import xList, yList, yMA, setYMA
-    global graphAlpha
 
     xList.append(len(xList))
-    if graphAlpha is True:
-        yList.append(alpha_relative)
-    else:
-        yList.append(theta_relative)
+    yList.append(alpha_relative)
 
     yMA = moving_average(yList,3).tolist()
 
