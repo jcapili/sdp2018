@@ -218,7 +218,7 @@ def start_session(id):
         isPlaying = True
         song_id = id
 
-        name = name + id + ".mp3"
+        name = "sounds/" + id + ".mp3"
         length = len(AudioSegment.from_file(name, format="mp3")) # milliseconds
         length = length/1000 # conversion to seconds
         phaseLength = 2*length/4
