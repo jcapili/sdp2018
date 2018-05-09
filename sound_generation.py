@@ -80,9 +80,9 @@ def play_sound(id):
     elif id in songs:
         print( "playing ", id )
         file = file + id + ".mp3"
-        custom_play(AudioSegment.from_file(file, format="mp3").fade_in(duration=fade_length).fade_out(duration=fade_length))
-        print("playing next song")
-        custom_play(AudioSegment.from_file(file, format="mp3").fade_in(duration=fade_length).fade_out(duration=fade_length))
+        custom_play(AudioSegment.from_file(file, format="mp3"))
+#        print("playing next song")
+#        custom_play(AudioSegment.from_file(file, format="mp3"))
 
 """
 This function stops the song file from playing without needing to do a KeyboardInterrupt
@@ -109,7 +109,7 @@ def custom_play(seg):
     p.terminate()
 
 """
-This function uses a while loop within the thread from the function start_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.
+This function uses a while loop within the thread from the function start_timer to keep track of how long the session has been going on for. This is to allow the program to start playing binaural beats at the right time without interrupting any other threads.
 """
 def timer():
     global phases, phaseIsPlaying, playAlpha
@@ -117,7 +117,7 @@ def timer():
     while isPlaying is True:
 #        print("hello")
         elapsed = time.time() - start
-        print(elapsed)
+#        print(elapsed)
         if elapsed > phases[0] and elapsed < phases[1] and phaseIsPlaying[0] is False:
             print("starting alpha")
             phaseIsPlaying[0] = True
@@ -142,10 +142,13 @@ def timer():
             stop_session()
         time.sleep(1)
 
+"""
+This function uses a while loop within the thread from the function start_bin_timer to keep track of how long a binaural beat has been playing. Once the beat has been playing for sleep_time, the function uses the state of various global variables to either keep playing the current tone or switch to the other tone. It then breaks out of the while loop and terminates the daemon thread it's in.
+"""
 def bin_timer():
     start = time.time()
     while(1):
-        if (time.time() - start ) > (sleep_time-1):
+        if (time.time() - start ) > (sleep_time-1): # 1 accounts for sleep time
             if phaseIsPlaying[0] is True:
                 binaural_thread_1()
             elif phaseIsPlaying[1] is True:
@@ -158,12 +161,15 @@ def bin_timer():
             break
 
 """
-This function starts the thread that contains the timer for each binaural beat.
+This function starts the thread that contains the timer for the whole session.
 """
 def start_timer():
     if( isPlaying ):
         threading.Thread(target=timer, daemon=True).start()
 
+"""
+This function starts the thread that contains the timer for each binaural beat.
+"""
 def start_bin_timer():
     if( isPlaying ):
         threading.Thread(target=bin_timer, daemon=True).start()
@@ -214,15 +220,16 @@ def start_session(id):
 
         name = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"+ id + ".mp3"
         length = len(AudioSegment.from_file(name, format="mp3")) # milliseconds
+        length = length/1000 # conversion to seconds
         phaseLength = 2*length/4
-        phases.append( phaseLength )
-        phases.append( 2*phaseLength )
-        phases.append( 3*phaseLength )
-        phases.append( 4*phaseLength )
-#        phases.append( 10 )
-#        phases.append( 20 )
-#        phases.append( 30 )
-#        phases.append( 40 )
+#        phases.append( phaseLength )
+#        phases.append( 2*phaseLength )
+#        phases.append( 3*phaseLength )
+#        phases.append( 4*phaseLength )
+        phases.append( 45 )
+        phases.append( 90 )
+        phases.append( 135 )
+        phases.append( 180 )
 
         freq1 = songs[id][0]
         start_sound_thread(id)

@@ -82,7 +82,7 @@ def get_alpha_relative(unused_addr, args, ch1, ch2, ch3, ch4 ):
     else:
         global alpha_relative
         alpha_relative = total / numOfNotNan
-        print("Average of alpha relative: ", alpha_relative )
+#        print("Average of alpha relative: ", alpha_relative )
 
     global isHandled
     isHandled = True
