@@ -74,7 +74,7 @@ This function plays the sound file specified by id
 """
 def play_sound(id):
     #<<<<<<< HEAD
-    file = "/Users/Maile/Desktop/GitHub/sdp2018/sounds/"
+    #file = "/Users/Maile/Desktop/GitHub/sdp2018/sounds/"
     #=======
     file = "sounds/"
     #>>>>>>> master
@@ -216,7 +216,7 @@ def start_session(id):
         isPlaying = True
         song_id = id
 
-        name = "/Users/jasoncapili/Documents/GitHub/sdp2018/sounds/"+ id + ".mp3"
+        name = "sounds/"+ id + ".mp3"
         length = len(AudioSegment.from_file(name, format="mp3")) # milliseconds
         phaseLength = 2*length/4
         phases.append( phaseLength )
