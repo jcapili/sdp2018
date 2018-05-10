@@ -122,17 +122,17 @@ def timer():
 #        print(elapsed)
         if elapsed > phases[0] and elapsed < phases[1] and phaseIsPlaying[0] is False:
             print("starting alpha")
-            print(xList[len(xList)-1])
+#            print(xList[len(xList)-1])
             phaseIsPlaying[0] = True
             binaural_thread_1()
         elif elapsed > phases[1] and elapsed < phases[2] and phaseIsPlaying[1] is False:
             print("starting theta")
-            print(xList[len(xList)-1])
+#            print(xList[len(xList)-1])
             phaseIsPlaying[0] = False
             phaseIsPlaying[1] = True
             binaural_thread_2()
         elif elapsed > phases[2] and elapsed < phases[3] and phaseIsPlaying[2] is False:
-            print(xList[len(xList)-1])
+#            print(xList[len(xList)-1])
             phaseIsPlaying[1] = False
             phaseIsPlaying[2] = True
         elif elapsed > phases[3]:
@@ -221,14 +221,14 @@ def start_session(id):
         length = len(AudioSegment.from_file(name, format="mp3")) # milliseconds
         length = length/1000 # conversion to seconds
         phaseLength = 2*length/4
-#        phases.append( phaseLength )
-#        phases.append( 2*phaseLength )
-#        phases.append( 3*phaseLength )
-#        phases.append( 4*phaseLength )
-        phases.append( 10 )
-        phases.append( 20 )
-        phases.append( 30 )
-        phases.append( 40 )
+        phases.append( phaseLength )
+        phases.append( 2*phaseLength )
+        phases.append( 3*phaseLength )
+        phases.append( 4*phaseLength )
+#        phases.append( 10 )
+#        phases.append( 20 )
+#        phases.append( 30 )
+#        phases.append( 40 )
 
         freq1 = songs[id][0]
         start_sound_thread(id)
