@@ -32,6 +32,7 @@ q4 = 1
 #---General functionality globals---
 isHandled = False
 isServing = True
+hasEntered = False # Used in calculate_sounds to make sure thread doesn't enter last elif statement more than once
 
 #---Changeable variables---
 average_size = 50
@@ -152,22 +153,30 @@ def run_server():
 This function takes the average of a certain number of previous alpha_relative values specified by average_size. Every time the global counter reaches the average_size, the program determines if the current binaural beat needs to be changed, based on max_percent_change.
 """
 def calculate_sounds():
-    global alpha_relative, theta_relative, a_counter, t_counter, alpha_avg, theta_avg
-    from sound_generation import phaseIsPlaying, playAlpha
-    
+    global alpha_relative, theta_relative, a_counter, t_counter, alpha_avg, theta_avg, hasEntered
+    from sound_generation import phaseIsPlaying
+
+
     if phaseIsPlaying[0] is True:
-        alpha_avg += alpha_relative
-        a_counter += 1
+        alpha_avg = alpha_avg + alpha_relative
+        a_counter = a_counter + 1
     elif phaseIsPlaying[1] is True:
-        theta_avg += theta_relative
-        t_counter += 1
-    elif phaseIsPlaying[2] is True:
+        theta_avg = theta_avg + theta_relative
+        t_counter = t_counter + 1
+    elif phaseIsPlaying[2] is True and hasEntered is False:
+        from sound_generation import playAlpha, binaural_thread_1, binaural_thread_2
+        hasEntered = True
         alpha_avg = alpha_avg / a_counter
         theta_avg = theta_avg / t_counter
         if alpha_avg > theta_avg:
             playAlpha = True
+            print("starting alpha")
+            binaural_thread_1
         else:
             playAlpha = False
+            print("starting theta")
+            binaural_thread_2
+        print( alpha_avg, a_counter, theta_avg, t_counter )
 
 """
 Calculates the moving average of yList to make a smoother graph. Taken from https://gordoncluster.wordpress.com/2014/02/13/python-numpy-how-to-generate-moving-averages-efficiently-part-2/

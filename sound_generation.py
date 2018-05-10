@@ -13,6 +13,7 @@ volume_reduction = 20 # Changeable
 sleep_time = tone_length * 0.65 / 1000 # Changeable
 switchTones = False
 playAlpha = True
+isCalc = False
 freq1 = 217
 freq2 = 274
 song_id = None
@@ -112,7 +113,8 @@ def custom_play(seg):
 This function uses a while loop within the thread from the function start_timer to keep track of how long the session has been going on for. This is to allow the program to start playing binaural beats at the right time without interrupting any other threads.
 """
 def timer():
-    global phases, phaseIsPlaying, playAlpha
+    global phases, phaseIsPlaying, playAlpha, isCalc
+    from gui import xList
     start = time.time()
     while isPlaying is True:
 #        print("hello")
@@ -120,22 +122,19 @@ def timer():
 #        print(elapsed)
         if elapsed > phases[0] and elapsed < phases[1] and phaseIsPlaying[0] is False:
             print("starting alpha")
+            print(xList[len(xList)-1])
             phaseIsPlaying[0] = True
             binaural_thread_1()
         elif elapsed > phases[1] and elapsed < phases[2] and phaseIsPlaying[1] is False:
             print("starting theta")
+            print(xList[len(xList)-1])
             phaseIsPlaying[0] = False
             phaseIsPlaying[1] = True
             binaural_thread_2()
         elif elapsed > phases[2] and elapsed < phases[3] and phaseIsPlaying[2] is False:
+            print(xList[len(xList)-1])
             phaseIsPlaying[1] = False
             phaseIsPlaying[2] = True
-            if playAlpha:
-                print("starting alpha")
-                binaural_thread_1()
-            else:
-                print("starting theta")
-                binaural_thread_2()
         elif elapsed > phases[3]:
             print("terminating...")
             phaseIsPlaying[2] = False
@@ -213,7 +212,7 @@ def stop_session():
 This function starts all sounds if they're not already playing.
 """
 def start_session(id):
-    global isPlaying, freq1, freq2, songs, song_id, phases
+    global isPlaying, freq1, freq2, songs, song_id
     if isPlaying is False:
         isPlaying = True
         song_id = id
@@ -226,10 +225,10 @@ def start_session(id):
 #        phases.append( 2*phaseLength )
 #        phases.append( 3*phaseLength )
 #        phases.append( 4*phaseLength )
-        phases.append( 45 )
-        phases.append( 90 )
-        phases.append( 135 )
-        phases.append( 180 )
+        phases.append( 10 )
+        phases.append( 20 )
+        phases.append( 30 )
+        phases.append( 40 )
 
         freq1 = songs[id][0]
         start_sound_thread(id)
