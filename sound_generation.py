@@ -124,13 +124,13 @@ def timer():
             print("starting alpha")
 #            print(xList[len(xList)-1])
             phaseIsPlaying[0] = True
-            binaural_thread_1()
+#            binaural_thread_1()
         elif elapsed > phases[1] and elapsed < phases[2] and phaseIsPlaying[1] is False:
             print("starting theta")
 #            print(xList[len(xList)-1])
             phaseIsPlaying[0] = False
             phaseIsPlaying[1] = True
-            binaural_thread_2()
+#            binaural_thread_2()
         elif elapsed > phases[2] and elapsed < phases[3] and phaseIsPlaying[2] is False:
 #            print(xList[len(xList)-1])
             phaseIsPlaying[1] = False
@@ -225,10 +225,10 @@ def start_session(id):
         phases.append( 2*phaseLength )
         phases.append( 3*phaseLength )
         phases.append( 4*phaseLength )
-#        phases.append( 10 )
-#        phases.append( 20 )
+#        phases.append( 15 )
 #        phases.append( 30 )
-#        phases.append( 40 )
+#        phases.append( 45 )
+#        phases.append( 60 )
 
         freq1 = songs[id][0]
         start_sound_thread(id)

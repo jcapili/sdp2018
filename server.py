@@ -170,10 +170,10 @@ def calculate_sounds():
         theta_avg = theta_avg / t_counter
         if alpha_avg > theta_avg:
             print("starting alpha")
-            binaural_thread_1
+#            binaural_thread_1
         else:
             print("starting theta")
-            binaural_thread_2
+#            binaural_thread_2
 #        print( alpha_avg, a_counter, theta_avg, t_counter )
 
 """

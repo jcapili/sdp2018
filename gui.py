@@ -180,7 +180,7 @@ class SessionData(Frame):
             show_btn.pack_forget()
         
         def generate():
-            with open('session.csv', 'w' ) as csvfile:
+            with open('session1.csv', 'w' ) as csvfile:
                 writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
                 for i in yList:
                     temp = []
